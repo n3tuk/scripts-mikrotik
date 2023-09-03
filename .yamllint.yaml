@@ -1,0 +1,48 @@
+---
+extends: default
+
+rules:
+  document-start:
+    present: true
+  document-end:
+    present: false
+
+  line-length:
+    max: 100
+    allow-non-breakable-words: true
+  trailing-spaces: {} # Enabled
+  empty-lines:
+    max: 1
+    max-start: 1
+    max-end: 0
+
+  indentation:
+    spaces: 2
+    # Allow 0 indentations in files provided the file is consistent
+    indent-sequences: consistent
+
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+  colons:
+    max-spaces-before: 0
+    max-spaces-after: 1
+
+  commas:
+    max-spaces-before: 0
+    min-spaces-after: 1
+    max-spaces-after: 1
+
+  # quoted-strings:
+  #   quote-type: single
+  #   required: only-when-needed
+
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true
+
+  comments:
+    require-starting-space: true
+    ignore-shebangs: true
+    min-spaces-from-content: 1

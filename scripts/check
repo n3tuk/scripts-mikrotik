@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+source "$(dirname "${0}")/common.sh"
+
+export=${1:-router.bridgend.n3t.uk:initialise}
+
+set -ueo pipefail
+
+info "Validating ${export/*:/} export for ${export/:*/}"
+
+if test ! -e "devices/${export/:*/}.yaml"; then
+  fatal "No configuration found for ${export/:*/}"
+fi
+
+if test ! -e "templates/exports/${export/*:/}.rsc.t"; then
+  fatal "No template found for ${export/*:/}"
+fi

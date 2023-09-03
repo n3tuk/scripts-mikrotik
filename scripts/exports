@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+source "$(dirname "${0}")/common.sh"
+set -ueo pipefail
+
+device_dir="devices"
+
+if [ "${use_examples:-false}" == "true" ]; then
+  device_dir="examples"
+fi
+
+devices=$(
+  find "${device_dir}" \
+    -type f \
+    -name '*.yaml' \
+    -and -not \( -name 'example.yaml' -or -name 'network.yaml' \) \
+    | sed -e 's|^devices/||' -e 's|^examples/||' -e 's|\.yaml$||'
+)
+
+exports=$(
+  find templates/exports \
+    -type f \
+    -name '*.rsc.t' \
+    | sed -e 's|^templates/exports/||' -e 's|\.rsc.t$||'
+)
+
+echo "${devices[@]}" | while read -r device; do
+  echo "${exports[@]}" | while read -r export; do
+    echo "${device}:${export}"
+  done
+done | fzf --filter "${1:-:}"

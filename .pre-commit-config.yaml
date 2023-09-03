@@ -1,0 +1,52 @@
+---
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks.git
+    rev: v4.4.0
+    hooks:
+      - id: check-merge-conflict
+        name: Check for merge conflicts before committing
+      - id: check-case-conflict
+        name: Check for case conflicts for case-sensitive filesystems
+      - id: check-symlinks
+        name: Check for broken syslinks in the repository
+      - id: destroyed-symlinks
+        name: Check for destroyed symlinks in the repository
+      - id: check-added-large-files
+        name: Check no large files have been added to the commit
+      - id: trailing-whitespace
+        name: Check all trailing whitespace is removed
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+        name: Check all files end in a new-line only
+
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.32.0
+    hooks:
+      - id: yamllint
+        name: Lint YAML files for correctness and formatting
+        args: [--config-file, .yamllint.yaml]
+
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks.git
+    rev: 3.0.0
+    hooks:
+      - id: script-must-have-extension
+        name: Check non-executable shell scripts end with .sh extension
+      - id: script-must-not-have-extension
+        name: Check executable shell scripts to not have extension
+      - id: shellcheck
+        name: Check shell scripts with shellcheck
+      - id: shfmt
+        name: Check shell scripts formtting with shfmt
+        args: ["-i", "2", "-bn", "-ci", "-sr"]
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli.git
+    rev: v0.35.0
+    hooks:
+      - id: markdownlint-docker
+        name: Check Markdown correctness and formatting
+
+  - repo: https://github.com/zricethezav/gitleaks.git
+    rev: v8.17.0
+    hooks:
+      - id: gitleaks-docker
+        name: Check for hard-coded secrets, keys, and credentials

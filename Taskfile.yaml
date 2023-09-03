@@ -1,0 +1,160 @@
+---
+version: 3
+interval: 1000ms
+
+tasks:
+  default:
+    desc: Run the default task (export)
+    deps:
+      - task: pre-checks
+      - task: pre-commit
+    cmds:
+      - task: export
+
+  force:
+    desc: Clean up and then re-export all scripts
+    summary: |
+      Force a run (by first cleaning up) all the scripts to be exported, and then
+      running the export of the configurations.
+    deps:
+      - task: pre-checks
+    cmds:
+      - task: clean
+      - task: export
+
+  pre-checks:
+    desc: Check the environment before exporting
+    internal: true
+    silent: true
+    run: once
+    cmds:
+      - cmd: |-
+          test -x "$(which pre-commit 2>/dev/null)" \
+            || (echo "Cannot find 'pre-commit'. Please install before trying again."; exit 1)
+      - cmd: |-
+          test -x "$(which jq 2>/dev/null)" \
+            || (echo "Cannot find 'jq'. Please install before trying again."; exit 1)
+      - cmd: |-
+          test -x "$(which yq 2>/dev/null)" \
+            || (echo "Cannot find 'yq'. Please install before trying again."; exit 1)
+      - cmd: |-
+          test -x "$(which gomplate 2>/dev/null)" \
+            || (echo "Cannot find 'gomplate'. Please install before trying again."; exit 1)
+      - cmd: |-
+          test -x "$(which yamllint 2>/dev/null)" \
+            || (echo "Cannot find 'yamllint'. Please install before trying again."; exit 1)
+    status:
+      # Setting this file will bypass pre-checks (only use if you are sure)
+      - test -f .skip-pre-checks
+
+  pre-commit:
+    desc: Set up the pre-commit hook in this repository
+    internal: true
+    silent: true
+    run: once
+    deps:
+      - task: pre-checks
+    cmds:
+      - cmd: pre-commit install
+    generates:
+      - .git/hooks/pre-commit
+    status:
+      - test -f .git/hooks/pre-commit
+
+  directories:
+    desc: Ensure all required directories are created before running tasks
+    run: once
+    silent: true
+    internal: true
+    cmds:
+      - cmd: |-
+          mkdir exports
+    generates:
+      - exports
+    status:
+      - test -d exports
+
+  lint:
+    desc: Check and lint files for correctness
+    summary: |-
+      For files which can be linted and checked, itterate over the files and
+      check them for validity and correctness, as supported, catching errors
+      before they're used in gomplate.
+    deps:
+      - task: pre-checks
+    cmds:
+      - task: lint-yaml
+
+  lint-yaml:
+    desc: Check and lint all YAML files
+    deps:
+      - task: pre-checks
+    internal: true
+    sources:
+      - "*.yaml"
+      - "devices/*.yaml"
+      - "networks/*.yaml"
+      - "examples/*.yaml"
+    cmds:
+      - cmd: |-
+          yamllint -c .yamllint.yaml \
+            *.yaml {examples,devices,networks}/*.yaml
+
+  export:
+    desc: Build and export the scripts for all devices
+    summary: |-
+      Build and export all the required configuration scripts for all the
+      devices needed (as set by the fuzzy search). By default, all export types
+      will be build and exported for all known devices.
+    deps:
+      - task: pre-checks
+      - task: lint
+      - task: directories
+    sources:
+      - devices/*
+      - networks/*
+      - scripts/*
+      - templates/exports/*.rsc.t
+      - templates/parts/*.rsc.t
+    vars:
+      exports:
+        sh: scripts/exports {{ .CLI_ARGS }}
+    cmds:
+      - for:
+          var: exports
+          as: export
+        cmd: scripts/export {{.export}}
+
+  examples:
+    desc: Build and export scripts based on the examples only
+    summary: |-
+      Build and export the scripts for all the devices in the examples directory only.
+    deps:
+      - task: pre-checks
+      - task: lint
+      - task: directories
+    sources:
+      - examples/*
+      - templates/exports/*.rsc.t
+      - templates/parts/*.rsc.t
+    env:
+      use_examples: true
+    vars:
+      exports:
+        sh: use_examples=true scripts/exports {{ .CLI_ARGS }}
+    cmds:
+      - for:
+          var: exports
+          as: export
+        cmd: scripts/export {{.export}}
+
+  clean:
+    desc: Clean up the temporary files from the repository
+    summary: |
+      Remove any generated configuration files and temporary files from the repository.
+    run: once
+    silent: true
+    cmds:
+      - cmd: rm -rf exports/*.rsc
+      - cmd: rm -rf exports/.????-gomplate-config.json
+      - cmd: rm -rf .task
