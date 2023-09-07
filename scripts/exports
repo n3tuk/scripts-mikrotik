@@ -2,29 +2,29 @@
 source "$(dirname "${0}")/common.sh"
 set -ueo pipefail
 
-device_dir="devices"
+hosts_dir="hosts"
 
 if [ "${use_examples:-false}" == "true" ]; then
-  device_dir="examples"
+  hosts_dir="examples"
 fi
 
-devices=$(
-  find "${device_dir}" \
+hosts=$(
+  find "${hosts_dir}" \
     -type f \
     -name '*.yaml' \
     -and -not \( -name 'example.yaml' -or -name 'network.yaml' \) \
-    | sed -e 's|^devices/||' -e 's|^examples/||' -e 's|\.yaml$||'
+    | sed -e 's|^hosts/||' -e 's|^examples/||' -e 's|\.yaml$||'
 )
 
 exports=$(
   find templates/exports \
     -type f \
-    -name '*.rsc.t' \
-    | sed -e 's|^templates/exports/||' -e 's|\.rsc.t$||'
+    \( -name '*.rsc.t' -or -name '*.scr.t' \) \
+    | sed -e 's|^templates/exports/||' -e 's|\.rsc.t$||' -e 's|\.scr.t$||'
 )
 
-echo "${devices[@]}" | while read -r device; do
+echo "${hosts[@]}" | while read -r host; do
   echo "${exports[@]}" | while read -r export; do
-    echo "${device}:${export}"
+    echo "${host}:${export}"
   done
 done | fzf --filter "${1:-:}"

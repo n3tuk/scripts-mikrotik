@@ -1,0 +1,152 @@
+---
+# This is an example configuration for a router-based MikroTik host, showing
+# the possible configuration options which can be set and passed into the
+# templates for exporting into the different types. See examples/switch.yaml for
+# an example of a switch-based host, as well as examples/network.yaml for an
+# example configuration of the network.
+
+# Define the name of this Mikrotik host which will be used to set the identity
+# during initialisation. This can be any string you want; it's not used to set
+# any DNS or any other configuration.
+name: router
+
+# Define the name of the network you want to configure this host against,
+# where the network should be a .yaml file under the networks/ directory in this
+# repository.
+network: network
+
+# Define whether the source of all the data for this host should only come
+# from the local file (i.e. this file), or whether a Vault server should be
+# accessed for values which are merged over the top of this file before
+# processing. Values should only be local or vault.
+source: local
+
+# Define the type of the device being configured, which should be one of router,
+# switch, or ap (access point), so parts of the configurations and be
+# specifically updated to the purpose of this host.
+type: router
+
+# Where vault is used in the source value above, add the following configuration
+# to configure the hostname of the server to connect to and the path where the
+# overrides are kept. Authentication is not handled by this tool; a VAULT_TOKEN
+# or other environment configuration is expected to permit the required access.
+# vault:
+#   host: vault.pip3.uk
+#   path: mikrotik/host/router.bridgend.n3t.uk
+
+# Set model and description to any value you like, as these are just metadata
+# values which are included in the header of any exported script to provide
+# information about the host the script is being created for.
+model: RB4011iGS+RM
+description: |-
+  The core router of the network providing routing and firewall facilities
+
+settings:
+  mtu: 2000
+  l2mtu: 2092
+
+  ssh:
+    # openssl genpkey -algorithm ed25519
+    key: |
+      -- PRIVATE KEY --
+
+  # Set the timezone for this server to properly configure the local time and
+  # any checks for summer/winter times. This is based on the standard tz
+  # database, more of which be found in the Wiki:
+  #   https://wiki.mikrotik.com/wiki/Manual:System/Time
+  timezone: Europe/London
+
+  # Configure a list of external NTP Servers as an override for those from the
+  # (network.yaml).settings.ntp_servers configuration. This is useful to provide
+  # the external servers on a router which can synchronise with public NTP
+  # servers, and then provide those into the network, with the router configured
+  # under network settings. Don't forget to add these to the fw-ntp-trusted
+  # Address List via the (network.yaml).lists.address.ntp.trusted setting.
+  ntp_servers:
+    - address: 0.uk.pool.ntp.org
+      comment: NTP Pool Project for United Kingdom
+    - address: 1.uk.pool.ntp.org
+      comment: NTP Pool Project for United Kingdom
+    - address: 2.uk.pool.ntp.org
+      comment: NTP Pool Project for United Kingdom
+    - address: 3.uk.pool.ntp.org
+      comment: NTP Pool Project for United Kingdom
+
+# The network is only configured with a single bridge interface for all hosts
+# to which all physical are attached, and then all of these are variously
+# associated with VLANs in tagged and untagged configurations. This block
+# configures that bridge.
+bridge:
+  name: bri01
+  original: bridge
+  priority: 0x3000
+  # The default VLAN PID that this interface should be associated with; by
+  # default this is management and shouldn't normally be changed.
+  vlans:
+    - management
+  # Define the IPv4 and IPv6 (optional) address for this host on the
+  # Management VLAN. IPv6 can support a /64 address as EUI64 will be enabled. If
+  # not provided, no IPv6 address will be assigned.
+  ipv4:
+    address: 172.16.0.1/24
+  ipv6:
+    address: 2f00:8086:8086:0::/64
+  comment: Management Network
+
+interfaces:
+  # All interfaces can be named as required, where name matched the name of the
+  # interface on the host to apply the configuration two, and if original is
+  # set, then the interface will be renamed from original to name during
+  # initialisation of the host via the netinstall script.
+  - name: wan01
+    enabled: true
+    original: ether1
+    bridge: false
+    mtu: 1500
+    l2mtu: 1592
+    comment: Zen Internet (FTTP)
+
+  - name: mgt01
+    enabled: true
+    original: ether2
+    # Define the cost of this port on this bridge interface, which will be
+    # factored in as part of the calculation to the root bridge. The value
+    # should be 20Tbps/(interface speed), so:
+    #     1Gbps: 20000 | 10Gbps:  2000 | 100Gbps:   200 | 1Tbps:    20 |
+    #   2.5Gbps:  8000 | 25Gbps:   800 |                |
+    #                  | 40Gbps:   500 | 400Gbps:    50 |
+    #     5Gbps:  4000 |
+    cost: 20000 # Gigabit Ethernet
+    comment: Management Interface
+
+  - name: gbe01
+    original: ether3
+    cost: 20000
+    # Any individual interface can be set to disabled by setting enabled here to
+    # false. If enabled is set to true, or enabled is not set, then the
+    # interface is set to enabled.
+
+  - name: gbe02
+    original: ether4
+    cost: 20000
+
+  - name: gbe03
+    original: ether5
+    cost: 20000
+
+  - name: gbe04
+    original: ether6
+    cost: 20000
+
+  - name: gbe05
+    original: ether7
+    cost: 20000
+
+  - name: gbe06
+    original: ether8
+    cost: 20000
+
+  - name: xfp01
+    enabled: true
+    original: sfp-plus1
+    cost: 2000 # 10GbE

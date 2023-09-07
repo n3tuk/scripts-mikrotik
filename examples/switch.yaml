@@ -1,0 +1,205 @@
+---
+# This is an example configuration for a switch-based MikroTik host, showing
+# the possible configuration options which can be set and passed into the
+# templates for exporting into the different types. See examples/router.yaml for
+# an example of a router-based host (and descriptions of settings not covered
+# here), as well as examples/network.yaml for an example configuration of the
+# network.
+
+host: switch1
+type: switch
+network: network
+source: local
+
+model: CRS328-24P-4S+RM
+description: |-
+  The core switch of the network providing switching and PoE functions
+
+settings:
+  timezone: Europe/London
+
+bridge:
+  name: bri01
+  original: bridge
+  vlans:
+    - management
+  ipv4:
+    address: 172.16.0.2/24
+  ipv6:
+    address: 2f00:8086:8086:0::/64
+  comment: Management Network
+
+interfaces:
+  - name: gbe01
+    original: ether1
+    bridge: bri01
+    cost: 20000
+    comment: Desktop Computer
+
+  - name: gbe02
+    original: ether2
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe03
+    original: ether3
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe04
+    original: ether4
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe05
+    original: ether5
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe06
+    original: ether6
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe07
+    original: ether7
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe08
+    original: ether8
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe09
+    original: ether9
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe10
+    original: ether10
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe11
+    original: ether11
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe12
+    original: ether12
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe13
+    original: ether13
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe14
+    original: ether14
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe15
+    original: ether15
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe16
+    original: ether16
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe17
+    original: ether17
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe18
+    original: ether18
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe19
+    original: ether19
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe20
+    original: ether20
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe21
+    original: ether21
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe22
+    original: ether22
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe22
+    original: ether22
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe23
+    original: ether23
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: gbe24
+    original: ether24
+    bridge: bri01
+    cost: 20000
+    enabled: false
+
+  - name: xfp01
+    original: sfp-plus1
+    bridge: bri01
+    cost: 2000 # 10GbE
+    enabled: true
+
+  - name: xfp02
+    original: sfp-plus2
+    bridge: bri01
+    cost: 2000
+    enabled: false
+
+  - name: xfp03
+    original: sfp-plus3
+    bridge: bri01
+    cost: 2000
+    enabled: false
+
+  - name: xfp04
+    original: sfp-plus4
+    bridge: bri01
+    cost: 2000
+    enabled: false

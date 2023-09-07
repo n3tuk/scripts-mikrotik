@@ -2,73 +2,72 @@
 source "$(dirname "${0}")/common.sh"
 set -ueo pipefail
 
-device_dir="devices"
-network_dir="networks"
-export_dir="exports"
+hosts_dir="hosts"
+networks_dir="networks"
+exports_dir="exports"
 
 export=${1:-router.bridgend.n3t.uk:initialise}
-device=${export/:*/}
+host=${export/:*/}
 export=${export/*:/}
-export_file="${export_dir}/${device}-${export}.rsc"
+export_file="${exports_dir}/${host}-${export}"
 
-info "Building the ${export} script for ${device}"
+# netinstall-cli expects the script to have a extension of .scr rather than .rsc
+if [[ "${export}" == "netinstall" ]]; then
+  export_ext+="scr"
+else
+  export_ext+="rsc"
+fi
+
+info "${host}/${export}"
 
 if [ "${use_examples:-false}" == "true" ]; then
-  sub-note "Building from examples/ directory only"
-  device_dir="examples"
-  network_dir="examples"
+  hosts_dir="examples"
+  networks_dir="examples"
 fi
 
 declare -a gomplate_opts
 
-config_uri=$(mktemp --dry-run --tmpdir=${export_dir} .XXXX-config.json)
+config_uri=$(mktemp --dry-run --tmpdir=${exports_dir} .XXXX-config.json)
 date=$(date --iso-8601=seconds)
 
 function cleanup {
-  note "Cleaning up temporary files"
   rm -f "${config_uri}"
 }
 
 trap cleanup EXIT
 trap cleanup SIGINT
 
-sub-note "Creating and sourcing the export environment"
 jq --null-input \
-  --arg device "${device}" \
+  --arg name "${host}" \
   --arg export "${export}" \
   --arg date "${date}" \
-  '{"device":$device,"export":$export,"date":$date}' \
+  '{"name":$name,"export":$export,"date":$date}' \
   > "${config_uri}"
 gomplate_opts+=("--datasource" "export=${config_uri}")
 
-sub-note "Sourcing locally-stored device data: ${device_dir}/${device}.yaml"
-gomplate_opts+=("--datasource" "local=${device_dir}/${device}.yaml")
+sub-note "Sourcing local://${hosts_dir}/${host}.yaml"
+gomplate_opts+=("--datasource" "local=${hosts_dir}/${host}.yaml")
 
-# If vault is selected as a source in the device configuration file, then add an
-# extra layer to the data processing and merging for the device
-source=$(yq -r '.source' "${device_dir}/${device}.yaml" 2> /dev/null)
+# If vault is selected as a source in the host configuration file, then add an
+# extra layer to the data processing and merging for the host
+source=$(yq -r '.source' "${hosts_dir}/${host}.yaml" 2> /dev/null)
 if [ "${source}" == "vault" ] && [ "${use_examples:-false}" != "true" ]; then
-  vault_device=$(yq -r '.vault.device' "${device_dir}/${device}.yaml" 2> /dev/null)
-  vault_path=$(yq -r '.vault.path' "${device_dir}/${device}.yaml" 2> /dev/null)
-  sub-note "Sourcing remotely-stored device data: vault://${vault_device}/${vault_path}"
-  gomplate_opts+=("--datasource" "vault://${vault_device}/${vault_path}")
-  gomplate_opts+=("--datasource" "device=merge:export|vault|local")
+  vault_host=$(yq -r '.vault.host' "${hosts_dir}/${host}.yaml" 2> /dev/null)
+  vault_path=$(yq -r '.vault.path' "${hosts_dir}/${host}.yaml" 2> /dev/null)
+  sub-note "Sourcing vault://${vault_host}/${vault_path}"
+  gomplate_opts+=("--datasource" "vault://${vault_host}/${vault_path}")
+  gomplate_opts+=("--datasource" "host=merge:export|vault|local")
 else
-  gomplate_opts+=("--datasource" "device=merge:export|local")
+  gomplate_opts+=("--datasource" "host=merge:export|local")
 fi
 
-network_name=$(yq -r '.network' "${device_dir}/${device}.yaml")
-sub-note "Sourcing network data: ${network_dir}/${network_name}.yaml"
-gomplate_opts+=("--datasource" "network=${network_dir}/${network_name}.yaml")
+network_name=$(yq -r '.network' "${hosts_dir}/${host}.yaml")
+gomplate_opts+=("--datasource" "network=${networks_dir}/${network_name}.yaml")
 
-sub-note "Building the export script: ${export}"
 if ! gomplate \
   "${gomplate_opts[@]}" \
   --template parts=templates/parts/ \
-  --file "templates/${export_dir}/${export}.rsc.t" \
-  > "${export_file}"; then
-  error "Failed to export configuration script: ${export_file}"
-else
-  bytes=$(stat --format=%s "${export_file}")
-  sub-note "Exported configuration script ($bytes bytes)"
+  --file "templates/${exports_dir}/${export}.${export_ext}.t" \
+  > "${export_file}.${export_ext}"; then
+  error "Failed to export configuration script: ${export_file}.${export_ext}"
 fi

@@ -1,2 +1,6 @@
 .task/
+
 exports/*
+
+bin/*
+*.npk

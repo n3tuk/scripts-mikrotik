@@ -1,0 +1,43 @@
+---
+# This is an example configuration for a router-based MikroTik host, showing
+# the possible configuration options which can be set and passed into the
+# templates for exporting into the different types. See examples/switch.yaml for
+# an example of a switch-based host, as well as examples/network.yaml for an
+# example configuration of the network.
+
+host: ap1
+type: ap
+network: network
+source: local
+
+model: cAP AC
+description: |-
+  The Office access point.
+
+settings:
+  timezone: Europe/London
+
+bridge:
+  name: bri01
+  original: bridge
+  vlans:
+    - management
+  ipv4:
+    address: 172.16.0.100/24
+  ipv6:
+    address: 2f00:8086:8086:0::/64
+  comment: Management Network
+
+interfaces:
+  - name: gbe01
+    original: ether1
+    bridge: bri01
+    cost: 20000
+    comment: switch1 (trunk)
+
+  - name: gbe02
+    original: ether2
+    bridge: bri01
+    cost: 20000
+    comment: Unusued
+    enabled: false

@@ -38,6 +38,9 @@ tasks:
           test -x "$(which yq 2>/dev/null)" \
             || (echo "Cannot find 'yq'. Please install before trying again."; exit 1)
       - cmd: |-
+          test -x "$(which parallel 2>/dev/null)" \
+            || (echo "Cannot find 'parallel'. Please install before trying again."; exit 1)
+      - cmd: |-
           test -x "$(which gomplate 2>/dev/null)" \
             || (echo "Cannot find 'gomplate'. Please install before trying again."; exit 1)
       - cmd: |-
@@ -68,10 +71,14 @@ tasks:
     internal: true
     cmds:
       - cmd: |-
-          mkdir exports
+          mkdir -p hosts networks exports
     generates:
+      - hosts
+      - networks
       - exports
     status:
+      - test -d hosts
+      - test -d networks
       - test -d exports
 
   lint:
@@ -91,62 +98,57 @@ tasks:
       - task: pre-checks
     internal: true
     sources:
-      - "*.yaml"
-      - "devices/*.yaml"
+      - "hosts/*.yaml"
       - "networks/*.yaml"
       - "examples/*.yaml"
     cmds:
       - cmd: |-
           yamllint -c .yamllint.yaml \
-            *.yaml {examples,devices,networks}/*.yaml
+            {examples,hosts,networks}/*.yaml
 
   export:
-    desc: Build and export the scripts for all devices
+    desc: Build and export the scripts for all hosts
     summary: |-
       Build and export all the required configuration scripts for all the
-      devices needed (as set by the fuzzy search). By default, all export types
-      will be build and exported for all known devices.
+      hosts needed (as set by the fuzzy search). By default, all export types
+      will be build and exported for all known hosts.
     deps:
       - task: pre-checks
       - task: lint
       - task: directories
     sources:
-      - devices/*
+      - hosts/*
       - networks/*
       - scripts/*
+      - templates/exports/*.scr.t
       - templates/exports/*.rsc.t
       - templates/parts/*.rsc.t
     vars:
       exports:
-        sh: scripts/exports {{ .CLI_ARGS }}
     cmds:
-      - for:
-          var: exports
-          as: export
-        cmd: scripts/export {{.export}}
+      - cmd: |-
+          scripts/exports {{ .CLI_ARGS }} \
+            | parallel -kj 10 scripts/export
 
   examples:
     desc: Build and export scripts based on the examples only
     summary: |-
-      Build and export the scripts for all the devices in the examples directory only.
+      Build and export the scripts for all the hosts in the examples directory only.
     deps:
       - task: pre-checks
       - task: lint
       - task: directories
     sources:
       - examples/*
+      - templates/exports/*.scr.t
       - templates/exports/*.rsc.t
       - templates/parts/*.rsc.t
     env:
       use_examples: true
-    vars:
-      exports:
-        sh: use_examples=true scripts/exports {{ .CLI_ARGS }}
     cmds:
-      - for:
-          var: exports
-          as: export
-        cmd: scripts/export {{.export}}
+      - cmd: |-
+          scripts/exports {{ .CLI_ARGS }} \
+            | parallel -kj 10 scripts/export
 
   clean:
     desc: Clean up the temporary files from the repository
@@ -155,6 +157,6 @@ tasks:
     run: once
     silent: true
     cmds:
-      - cmd: rm -rf exports/*.rsc
+      - cmd: rm -rf exports/*.rsc exports/*.scr
       - cmd: rm -rf exports/.????-gomplate-config.json
       - cmd: rm -rf .task
