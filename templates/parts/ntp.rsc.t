@@ -47,10 +47,11 @@ set enabled=no
 {{-  end }}
 
 /system ntp server
-{{ if (and (eq (ds "host").name "router") (gt (len $ntp_servers) 0)) -}}
+{{ if (and (eq (ds "host").type "router") (gt (len $ntp_servers) 0)) -}}
 set enabled=yes \
-    manycast=yes \
-    multicast=yes
+    broadcast=no \
+    manycast=no \
+    multicast=no
 {{- else -}}
 set enabled=no
 {{-  end }}
