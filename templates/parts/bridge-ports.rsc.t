@@ -3,8 +3,8 @@
 # Set or update the configuration for the Bridge interfaces on this host
 
 {{- $bridge := (ds "host").bridge.name }}
-{{- $v_defaults := dict "enabled" true "comment" "VLAN" }}
-{{- $i_defaults := dict "enabled" false "type" "ethernet" "vlan" "blocked" "comment" "Unused" }}
+{{- $v_defaults := coll.Dict "enabled" true "comment" "VLAN" }}
+{{- $i_defaults := coll.Dict "enabled" false "type" "ethernet" "vlan" "blocked" "comment" "Unused" }}
 
 {{- $blocked := 1 }}
 {{- $management := 2 }}

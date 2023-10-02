@@ -1,7 +1,7 @@
 # -- templates/parts/ntp.rsc.t
 {{- /* vim:set ft=routeros: */}}
 
-{{- $defaults := dict "enabled" true "comment" "" }}
+{{- $defaults := coll.Dict "enabled" true "comment" "" }}
 
 {{- $ntp_servers := coll.Slice }}
 {{- if (and (has (ds "host") "settings") (has (ds "host").settings "ntp_servers")) }}

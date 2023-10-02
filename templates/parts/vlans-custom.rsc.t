@@ -2,8 +2,8 @@
 {{- /* vim:set ft=routeros: */}}
 
 {{- $bridge := (ds "host").bridge.name }}
-{{- $v_defaults := dict "enabled" true "comment" "VLAN" }}
-{{- $i_defaults := dict "enabled" false "type" "ethernet" "bridge" true "vlan" "blocked" "comment" "Unused" }}
+{{- $v_defaults := coll.Dict "enabled" true "comment" "VLAN" }}
+{{- $i_defaults := coll.Dict "enabled" false "type" "ether" "bridge" true "vlan" "blocked" "comment" "Unused" }}
 
 {{  template "component" "Configure the Custom VLANs" }}
 

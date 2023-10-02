@@ -2,7 +2,7 @@
 {{- /* vim:set ft=routeros: */}}
 
 {{- $bridge := (ds "host").bridge.name }}
-{{- $v_defaults := dict "enabled" true "comment" "" }}
+{{- $v_defaults := coll.Dict "enabled" true "comment" "" }}
 
 {{- $comment := false -}}
 {{- range $v := (ds "network").vlans -}}

@@ -68,7 +68,7 @@
 
 :log info "{{ (ds "host").export }}.rsc/$runId: {{ (ds "host").name }} (built {{ (ds "host").date }})"
 
-{{- $i_defaults := dict "enabled" false "type" "ethernet" "vlan" "blocked" "comment" "Unused" }}
+{{- $i_defaults := coll.Dict "enabled" false "type" "ethernet" "vlan" "blocked" "comment" "Unused" }}
 
 {{- if (eq (ds "host").export "netinstall") }}
 

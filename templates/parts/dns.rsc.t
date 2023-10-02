@@ -4,7 +4,7 @@
 # records which are required, for example, for DNS over HTTPS or DNS over TLS,
 # which host must know the entries if the certificates are to be validated.
 
-{{- $defaults := dict "enabled" true "ttl" "1h" "comment" "" }}
+{{- $defaults := coll.Dict "enabled" true "ttl" "1h" "comment" "" }}
 
 {{  template "section" "Set up DNS" }}
 

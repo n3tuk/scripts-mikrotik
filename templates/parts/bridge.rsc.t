@@ -2,7 +2,7 @@
 {{- /* vim:set ft=routeros: */}}
 
 {{- $bridge := (ds "host").bridge.name }}
-{{- $v_defaults := dict "enabled" true "comment" "VLAN" }}
+{{- $v_defaults := coll.Dict "enabled" true "comment" "VLAN" }}
 
 {{  template "section" "Set up Bridge Interface" }}
 
