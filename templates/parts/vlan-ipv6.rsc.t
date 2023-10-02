@@ -62,6 +62,18 @@ set [ find where interface="{{ .interface }}" ] \
     comment="{{ .comment }}"
 {{-     end }}
 
+/ipv6 nd prefix
+{{-     if $slaac }}
+remove [ find where interface="{{ .interface }}" and dynamic=no ]
+{{-     else }}
+:if ( \
+  [ :len [ find where interface="{{ .interface }}" ] ] = 0 \
+) do={ add interface="{{ .interface }}" prefix="::/64" }
+set [ find where interface="{{ .interface }}" ] \
+    prefix="::/64" autonomous=no \
+    comment="{{ .comment }}"
+{{-     end }}
+
 /ipv6 nd
 :if ( \
   [ :len [ find where interface="{{ .interface }}" ] ] = 0 \
