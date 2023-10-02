@@ -3,7 +3,7 @@
 
 {{- $bridge := (ds "host").bridge.name }}
 {{- $v_defaults := coll.Dict "enabled" true "comment" "VLAN" }}
-{{- $i_defaults := coll.Dict "enabled" false "type" "ether" "bridge" true "vlan" "blocked" "comment" "Unused" }}
+{{- $i_defaults := coll.Dict "enabled" false "type" "ethernet" "bridge" true "vlan" "blocked" "comment" "Unused" }}
 
 {{  template "component" "Configure the Custom VLANs" }}
 
@@ -29,15 +29,16 @@
 
 {{-     range $i := (ds "host").interfaces -}}
 {{-       $i = merge $i $i_defaults }}
-{{-       if (or (not (has $i "bridge")) (not $i.bridge)) -}}
+{{-       if (and (or (not (has $i "bridge")) $i.bridge)
+                  (or (eq $i.type "ethernet") (eq $i.type "bond"))) }}
 {{-         if (and (has $i "vlan") (eq $i.vlan $v.name)) -}}
 {{-           $untagged = $untagged | append $i.name -}}
 {{-         else -}}
-{{-           if (and (has $i "vlans") (has $i.vlans $v.name)) -}}
-{{-             $tagged = $tagged | append $i.name -}}
-{{-           end -}}
-{{-         end -}}
-{{-       end -}}
+{{-           if (and (has $i "vlans") (has $i.vlans $v.name)) }}
+{{-             $tagged = $tagged | append $i.name }}
+{{-           end }}
+{{-         end }}
+{{-       end }}
 {{-     end }}
 
 # {{ $bridge }}.{{ $v.id }}
