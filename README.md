@@ -368,7 +368,7 @@ able to access anything on the network, other than any other potential host
 connected to a blocked (but enabled) port.
 
 This VLAN has no interface on any bridge on any host and has no DHCP server
-(either via IPv4 or IPv6, nor SLAAP enabled via IPv6). Any communications are
+(either via IPv4 or IPv6, nor SLAAC enabled via IPv6). Any communications are
 local to the host itself too as this does not transit over any trunked physical
 interface.
 

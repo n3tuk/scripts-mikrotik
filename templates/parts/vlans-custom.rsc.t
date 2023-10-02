@@ -14,7 +14,7 @@
 {{-   end }}
 
 {{-   $v = merge $v $v_defaults }}
-{{-   $interface := print $bridge "." $v.id }}
+{{-   $v = merge $v (coll.Dict "interface" (print $bridge "." $v.id)) }}
 
 {{-   if $v.enabled -}}
 
@@ -43,7 +43,7 @@
 # {{ $bridge }}.{{ $v.id }}
 #   {{ $v.comment | strings.WordWrap 76 "\n#   " }}
 
-{{      template "item" $interface }}
+{{      template "item" $v.interface }}
 
 /interface bridge vlan
 :if ( \
@@ -62,91 +62,22 @@ set [ find where bridge="{{ $bridge }}" and vlan-ids="{{ $v.id }}" ] \
 ) do={
   add interface="{{ $bridge }}" \
       vlan-id="{{ $v.id }}" \
-      name="{{ $interface }}" \
+      name="{{ $v.interface }}" \
       mtu={{ if (has (ds "host").settings "mtu") }}{{ (ds "host").settings.mtu }}{{ else }}1500{{ end }} \
 }
 set [ find where interface="{{ $bridge }}" and vlan-id="{{ $v.id }}" ] \
-    name="{{ $interface }}" \
+    name="{{ $v.interface }}" \
     use-service-tag=no \
     comment="{{ $v.name }}{{ if (has $v "comment") }}: {{ $v.comment }}{{ end }}"
 
-{{-       if (has $v "ipv4") }}
-{{-         $address := (index ($v.ipv4.address | strings.Split "/") 0) }}
-{{-         $prefix := (index ($v.ipv4.address | strings.Split "/") 1) }}
-{{-         $network := (index ((net.ParseIPPrefix $v.ipv4.address).Range | strings.Split "-") 0) }}
-
-/ip address
-:if ( \
-  [ :len [ find where interface="{{ $interface }}" ] ] = 0 \
-) do={ add interface="{{ $interface }}" address="{{ $address }}/{{ $prefix }}" }
-set [ find where interface="{{ $interface }}" ] \
-    address="{{ $address }}/{{ $prefix }}" \
-    comment="{{ $v.name }} ({{ $v.comment }})"
-
-/ip pool
-:if ( \
-  [ :len [ find where name="{{ $v.name }}" ] ] = 0 \
-) do={ add name="{{ $v.name }}" range="{{ $v.ipv4.pool }}" }
-set [ find where name="{{ $v.name }}" ] \
-    range="{{ $v.ipv4.pool }}" \
-    comment="{{ $v.comment }}"
-
-/ip dhcp-server network
-:if ( \
-  [ :len [ find where address="{{ $network }}/{{ $prefix }}" ] ] = 0 \
-) do={ add address="{{ $network }}/{{ $prefix }}" }
-set [ find where address="{{ $network }}/{{ $prefix }}" ] \
-    gateway="{{ $address }}" \
-    dns-server="{{ $address }}" \
-    ntp-server="{{ $address }}" \
-    comment="{{ $v.name }} ({{ $v.comment }})"
-
-/ip dhcp-server
-:if ( \
-  [ :len [ find where interface="{{ $interface }}" ] ] = 0 \
-) do={ add interface="{{ $interface }}" }
-set [ find where interface="{{ $interface }}" ] \
-    name="{{ $v.name }}" \
-    address-pool="{{ $v.name }}" lease-time="{{ $v.ipv4.lease }}" \
-    comment="{{ $v.comment }}"
-
-{{       end -}}
-
-{{-       if (has $v "ipv6") }}
-{{-         $address := $v.ipv6.address }}
-{{-         $network := (index ((net.ParseIPPrefix $v.ipv6.address).Range | strings.Split "-") 0) }}
-{{-         $prefix := (index ($v.ipv6.address | strings.Split "/") 1) -}}
-
-/ipv6 address
-:if ( \
-  [ :len [ find where interface="{{ $interface }}" and dynamic=no ] ] = 0 \
-) do={ add interface="{{ $interface }}" address="{{ $address }}" }
-set [ find where interface="{{ $interface }}" and dynamic=no ] \
-    address="{{ $address }}" eui-64=no \
-    comment="{{ $v.name }} ({{ $v.comment }})"
-
-/ipv6 pool
-:if ( \
-  [ :len [ find where name="{{ $v.name }}" ] ] = 0 \
-) do={ add name="{{ $v.name }}" prefix="{{ $network }}/{{ $prefix }}" prefix-length={{ $prefix }} }
-set [ find where name="{{ $v.name }}" ] \
-    prefix="{{ $network }}/{{ $prefix }}" prefix-length={{ $prefix }}
-
-/ipv6 dhcp-server
-:if ( \
-  [ :len [ find where interface="{{ $interface }}" ] ] = 0 \
-) do={ add interface="{{ $interface }}" name="{{ $v.name }}" address-pool="{{ $v.name }}" }
-set [ find where interface="{{ $interface }}" ] \
-    name="{{ $v.name }}" \
-    address-pool="{{ $v.name }}" lease-time="{{ $v.ipv6.lease }}" \
-    comment="{{ $v.comment }}"
-{{-       end }}
+{{  template "parts/vlan-ipv4.rsc.t" $v }}
+{{  template "parts/vlan-ipv6.rsc.t" $v }}
 
 /interface list member
 :if ( \
-  [ :len [ find where list="internal" and interface="{{ $interface }}" ] ] = 0 \
-) do={ add list="internal" interface="{{ $interface }}" }
-set [ find where list="internal" and interface="{{ $interface }}" ] \
+  [ :len [ find where list="internal" and interface="{{ $v.interface }}" ] ] = 0 \
+) do={ add list="internal" interface="{{ $v.interface }}" }
+set [ find where list="internal" and interface="{{ $v.interface }}" ] \
     comment="{{ $v.comment }}"
 {{-     end -}}
 {{-   end -}}
