@@ -66,7 +66,7 @@ set [ find where interface="{{ .interface }}" ] \
 :if ( \
   [ :len [ find where interface="{{ .interface }}" ] ] = 0 \
 ) do={ add interface="{{ .interface }}" }
-set [ find where interface="{{ .interface }}" \
+set [ find where interface="{{ .interface }}" ] \
     advertise-mac-address=yes \
     advertise-dns=yes \
     managed-address-configuration={{ if $slaac }}no{{ else }}yes{{ end }} \
