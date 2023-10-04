@@ -28,7 +28,7 @@
 # for outgoing connections to public network via external interfaces from
 # internal hosts.
 
-{{- if (gt (len $ports) 0) }}
+{{- if (and (eq (ds "host").type "router") (gt (len $ports) 0)) }}
 
 {{    template "item" "nat/dstnat chain" }}
 
@@ -58,7 +58,7 @@ add chain="$runId:dstnat" \
 
 add chain="$runId:srcnat" \
     src-address-list="$runId:internal" \
-    dst-address-list="!$runId::internal" \
+    dst-address-list="!$runId:internal" \
     ipsec-policy=out,none \
     out-interface-list=external \
     action=masquerade \
