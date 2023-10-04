@@ -6,6 +6,11 @@
 /ip firewall filter
 
 add chain="$runId:output" \
+    protocol=icmp \
+    action=jump jump-target="$runId:check:icmp" \
+    comment="Process all ICMP connections and packets"
+
+add chain="$runId:output" \
     connection-state=established,related,untracked \
     action=accept \
     comment="ACCEPT packets on established, related, and untracked connections"
@@ -14,10 +19,6 @@ add chain="$runId:output" \
     action=drop \
     comment="DROP packets from invalid connections"
 
-add chain="$runId:output" \
-    protocol=icmp \
-    action=jump jump-target="$runId:check:icmp" \
-    comment="Process all ICMP connections and packets"
 add chain="$runId:output" \
     dst-address-list="$runId:dns:trusted" \
     action=jump jump-target="$runId:check:dns" \
@@ -43,6 +44,11 @@ add chain="$runId:output" \
 /ipv6 firewall filter
 
 add chain="$runId:output" \
+    protocol=icmpv6 \
+    action=accept \
+    comment="ACCEPT all ICMPv6 connections and packets"
+
+add chain="$runId:output" \
     connection-state=established,related,untracked \
     action=accept \
     comment="ACCEPT packets on established, related, and untracked connections"
@@ -51,10 +57,6 @@ add chain="$runId:output" \
     action=drop \
     comment="DROP packets from invalid connections"
 
-add chain="$runId:output" \
-    protocol=icmpv6 \
-    action=accept \
-    comment="ACCEPT all ICMPv6 connections and packets"
 add chain="$runId:output" \
     dst-address-list="$runId:dns:trusted" \
     action=jump jump-target="$runId:check:dns" \

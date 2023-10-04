@@ -19,6 +19,11 @@
 /ip firewall filter
 
 add chain="$runId:forward" \
+    protocol=icmp \
+    action=jump jump-target="$runId:check:icmp" \
+    comment="Process all ICMP connections and packets"
+
+add chain="$runId:forward" \
     connection-state=established,related,untracked \
     action=fasttrack-connection \
     hw-offload=yes \
@@ -32,10 +37,6 @@ add chain="$runId:forward" \
     action=drop \
     comment="DROP packets from invalid connections"
 
-add chain="$runId:forward" \
-    protocol=icmp \
-    action=jump jump-target="$runId:check:icmp" \
-    comment="Process all ICMP connections and packets"
 add chain="$runId:forward" \
     dst-address-list="$runId:dns:trusted" \
     action=jump jump-target="$runId:check:dns" \
@@ -53,15 +54,6 @@ add chain="$runId:forward" \
 /ipv6 firewall filter
 
 add chain="$runId:forward" \
-    connection-state=established,related,untracked \
-    action=accept \
-    comment="ACCEPT packets on established, related, and untracked connections (without acceleration)"
-add chain="$runId:forward" \
-    connection-state=invalid \
-    action=drop \
-    comment="DROP packets from invalid connections"
-
-add chain="$runId:forward" \
     protocol=icmpv6 \
     hop-limit=equal:1 \
     action=drop \
@@ -70,6 +62,16 @@ add chain="$runId:forward" \
     protocol=icmpv6 \
     action=accept \
     comment="ACCEPT all ICMPv6 connections and packets"
+
+add chain="$runId:forward" \
+    connection-state=established,related,untracked \
+    action=accept \
+    comment="ACCEPT packets on established, related, and untracked connections (without acceleration)"
+add chain="$runId:forward" \
+    connection-state=invalid \
+    action=drop \
+    comment="DROP packets from invalid connections"
+
 add chain="$runId:forward" \
     protocol=139 \
     action=accept \

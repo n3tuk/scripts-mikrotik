@@ -6,6 +6,11 @@
 /ip firewall filter
 
 add chain="$runId:input" \
+    protocol=icmp \
+    action=jump jump-target="$runId:check:icmp" \
+    comment="Process all ICMP connections and packets"
+
+add chain="$runId:input" \
     connection-state=established,related,untracked \
     action=accept \
     comment="ACCEPT packets on established, related, and untracked connections"
@@ -13,11 +18,6 @@ add chain="$runId:input" \
     connection-state=invalid \
     action=drop \
     comment="DROP packets from invalid connections"
-
-add chain="$runId:input" \
-    protocol=icmp \
-    action=jump jump-target="$runId:check:icmp" \
-    comment="Process all ICMP connections and packets"
 
 add chain="$runId:input" \
     src-address-list="$runId:internal" \
@@ -31,6 +31,11 @@ add chain="$runId:input" \
 /ipv6 firewall filter
 
 add chain="$runId:input" \
+    protocol=icmpv6 \
+    action=accept \
+    comment="ACCEPT all ICMPv6 connections and packets"
+
+add chain="$runId:input" \
     connection-state=established,related,untracked \
     action=accept \
     comment="ACCEPT packets on established, related, and untracked connections"
@@ -38,16 +43,6 @@ add chain="$runId:input" \
     connection-state=invalid \
     action=drop \
     comment="DROP packets from invalid connections"
-
-add chain="$runId:input" \
-    protocol=icmpv6 \
-    action=accept \
-    comment="ACCEPT all ICMPv6 connections and packets"
-add chain="$runId:input" \
-    src-address=fe80::/16 \
-    protocol=udp dst-port=546 \
-    action=accept \
-    comment="ACCEPT DHCPv6-client prefix delegation packets"
 
 add chain="$runId:input" \
     src-address-list="$runId:internal" \
