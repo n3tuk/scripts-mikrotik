@@ -34,6 +34,11 @@
 
 {{-   end }}
 
+{{-   if (and (eq $i.type "wireless")
+              (not (eq (ds "host").export "netinstall"))) }}
+{{-     continue }}
+{{-   end }}
+
 set [ find where name={{ $i.name }} ] \
 {{-   if (or (eq (ds "host").export "netinstall")
              (eq (ds "host").export "mtu")) }}
