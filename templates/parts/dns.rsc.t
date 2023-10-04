@@ -54,8 +54,11 @@ remove [
 
 {{  template "item" "Get the Certificate Authorities File" }}
 
+/ip dns
+set verify-doh-cert=no
+
 /tool fetch \
-  url="https://mkcert.org/generate/" \
+  url="https://curl.se/ca/cacert.pem" \
   check-certificate=no \
   dst-path="cacert.pem"
 
@@ -89,7 +92,7 @@ remove "cacert.pem"
 set allow-remote-requests=yes
 {{  end }}
 # Remove all upstream DNS servers and use DNS over HTTPS via Cloudflare
-set use-doh-server="https://cloudflare-dns.com/dns-query" \
+set use-doh-server="{{ (ds "network").dns.resolver.doh }}" \
     verify-doh-cert={{ if (eq (ds "host").export "netinstall") }}no{{ else }}yes{{ end }} \
     doh-max-concurrent-queries=128 \
     doh-max-server-connections=32 \
