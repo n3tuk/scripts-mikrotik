@@ -44,6 +44,15 @@ add chain="$runId:input" \
     action=drop \
     comment="DROP packets from invalid connections"
 
+{{- if (eq (ds "host").type "router") }}
+
+add chain="$runId:input" \
+    src-address=fe80::/16 \
+    protocol=udp dst-port=547 \
+    action=accept \
+    comment="ACCEPT DHCPv6 server requests"
+{{- end }}
+
 add chain="$runId:input" \
     src-address-list="$runId:internal" \
     action=jump jump-target="$runId:input:internal" \

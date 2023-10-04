@@ -57,6 +57,15 @@ add chain="$runId:output" \
     action=drop \
     comment="DROP packets from invalid connections"
 
+{{- if (eq (ds "host").type "router") }}
+
+add chain="$runId:output" \
+    src-address=fe80::/16 \
+    protocol=udp dst-port=546 \
+    action=accept \
+    comment="ACCEPT DHCPv6 client responses"
+{{- end }}
+
 add chain="$runId:output" \
     dst-address-list="$runId:dns:trusted" \
     action=jump jump-target="$runId:check:dns" \
