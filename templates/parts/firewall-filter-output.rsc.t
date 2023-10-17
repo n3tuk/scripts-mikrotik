@@ -92,10 +92,12 @@ add chain="$runId:output" \
 
 /ip firewall filter
 
-add chain="output" action=jump jump-target="$runId:output" \
+add chain="output" \
+    action=jump jump-target="$runId:output" \
     comment="Process all packets passing leaving via the OUTPUT chain"
 
 /ipv6 firewall filter
 
-add chain="output" action=jump jump-target="$runId:output" \
+add chain="output" \
+    action=jump jump-target="$runId:output" \
     comment="Process all packets passing leaving via the OUTPUT chain"
