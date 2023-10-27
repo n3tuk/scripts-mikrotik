@@ -48,7 +48,7 @@
 
 /interface bridge vlan
 :if ( \
-  [ :len [ find where bridge="{{ $bridge }}" and vlan-ids="{{ $v.id }}" ] ] = 0 \
+  [ :len [ find where bridge="{{ $bridge }}" and vlan-ids="{{ $v.id }}" and dynamic=no ] ] = 0 \
 ) do={ add bridge="{{ $bridge }}" vlan-ids="{{ $v.id }}" }
 set [ find where bridge="{{ $bridge }}" and vlan-ids="{{ $v.id }}" ] \
     tagged="{{ join (sort $tagged) "," }}" \
