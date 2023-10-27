@@ -7,7 +7,8 @@
 
 add chain="$runId:output:internal" \
     dst-address-list="$runId:https:trusted" \
-    protocol=tcp dst-port=80,443 \
+    protocol=tcp \
+    dst-port=80,443 \
     action=accept \
     comment="ACCEPT all HTTP(S) connections to trusted hosts"
 
@@ -15,6 +16,7 @@ add chain="$runId:output:internal" \
 
 add chain="$runId:output:internal" \
     dst-address-list="$runId:https:trusted" \
-    protocol=tcp dst-port=80,443 \
+    protocol=tcp \
+    dst-port=80,443 \
     action=accept \
     comment="ACCEPT all HTTP(S) connections to trusted hosts"

@@ -1,6 +1,5 @@
 # -- templates/parts/firewall.rsc.t
 {{- /* vim:set ft=routeros: */}}
-# Build the IPv4 and IPv6 firewall tables and chains
 
 /ip settings
 set allow-fast-path=yes \

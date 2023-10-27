@@ -42,12 +42,6 @@ add chain="$runId:forward:services" \
     comment="{{ if (has $service "comment") }}{{ $service.comment }}{{ end }}"
 {{-   end }}
 
-add chain="$runId:forward" \
-    src-address-list="$runId:internal" \
-    connection-state=new \
-    action=jump jump-target="$runId:forward:services" \
-    comment="Process requests to required services within the internal network"
-
 {{- end }}
 
 {{- if $ipv6_enable }}
@@ -62,12 +56,7 @@ add chain="$runId:forward:services" \
     dst-port={{ $service.port }} \
     action=accept \
     comment="{{ if (has $service "comment") }}{{ $service.comment }}{{ end }}"
-{{-   end }}
 
-add chain="$runId:forward" \
-    src-address-list="$runId:internal" \
-    connection-state=new \
-    action=jump jump-target="$runId:forward:services" \
-    comment="Process requests to required services within the internal network"
+{{-   end }}
 
 {{- end }}

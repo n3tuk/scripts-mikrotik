@@ -1,5 +1,11 @@
 # -- templates/parts/firewall-cleanup.rsc.t
 {{- /* vim:set ft=routeros: */}}
+{{- /* Once all the rules in each of the chains are configured, and the initial
+       jumps in the default chains are appended, the old jumps can be removed
+       and in effect swap out the old firewall chains for the new in a single
+       command, allowing (in theory) the traffic to be cut over without the
+       firewall ever being in an interim state, or only being partially
+       configured if the script fails */}}
 
 {{- $keys := coll.Slice "ip" "ipv6" }}
 
@@ -16,12 +22,8 @@
 
 {{  template "item" (print $table " cleanup") }}
 
-# Once all the rules in each of the chains are configured, and the initial jumps
-# in the default chains are appended, the old jumps can be removed and in effect
-# swap out the old firewall chains for the new in a single command, allowing (in
-# theory) the traffic to be cut over without the firewall ever being in an
-# interim state, or only being partially configured if the script fails
-{{  range $keys }}
+{{- range $keys }}
+
 /{{ . }} firewall {{ $table }}
 
 remove [
@@ -29,7 +31,9 @@ remove [
          and ( ( action=jump and !( jump-target~"^$runId:" ) ) or action!=jump ) \
          and dynamic=no
 ]
-{{  end }}
+
+{{- end }}
+
 # Clean up all chains which are neither default nor the current version
 {{  range $keys }}
 /{{ . }} firewall {{ $table }}

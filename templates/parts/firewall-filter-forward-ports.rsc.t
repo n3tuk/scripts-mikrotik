@@ -41,12 +41,8 @@ add chain="$runId:forward:ports" \
     dst-port={{ $port.port }} \
     action=accept \
     comment="{{ if (has $port "comment") }}{{ $port.comment }}{{ end }}"
-{{-   end }}
 
-add chain="$runId:forward" \
-    connection-state=new \
-    action=jump jump-target="$runId:forward:ports" \
-    comment="Process requests to publicly accessible services from the internal network"
+{{-   end }}
 
 {{- end }}
 
@@ -61,17 +57,12 @@ add chain="$runId:forward" \
 {{-   range $port := $ipv6_ports }}
 
 add chain="$runId:forward:ports" \
-    in-interface={{ $port.interface }} \
     dst-address={{ $port.ipv6 }} \
     protocol={{ $port.protocol }} \
     dst-port={{ $port.port }} \
     action=accept \
     comment="{{ if (has $port "comment") }}{{ $port.comment }}{{ end }}"
-{{-   end }}
 
-add chain="$runId:forward" \
-    connection-state=new \
-    action=jump jump-target="$runId:forward:ports" \
-    comment="Process all connections ports which should be available publicly"
+{{-   end }}
 
 {{- end }}

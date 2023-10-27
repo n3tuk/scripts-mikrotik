@@ -7,23 +7,24 @@
 #
 # Specifically, add checks to the RAW table which allows packet processing to be
 # quickly bypassed if required, to ensure inbound DHCP packets are accepted via
-# the global broadcast address (as this is technically a BOGON network address)
-# and to drop packets received from, or being sent to, a BOGON network range.
+# the global broadcast address for IPv4 (as this is technically a BOGON network
+# address) and to drop packets received from, or being sent to, a BOGON network
+# range.
 
 {{  template "component" "raw table" }}
 
 # -> prerouting
 #  - prerouting bypass (disabled)
-#  - accept dhcp discovery packets
+#  - accept dhcp discovery packets (ipv4)
+#  > check:bogons
+#    - drop invalid network packets
 #  > check:tcp
 #    - drop invalid tcp packets
 #  > check:udp
 #    - drop invalid udp packets
-#  > check:bogons
-#    - drop invalid network packets
 
+{{  template "parts/firewall-raw-prerouting.rsc.t" }}
 {{  template "parts/firewall-raw-check-bogons.rsc.t" }}
 {{  template "parts/firewall-raw-check-tcp.rsc.t" }}
 {{  template "parts/firewall-raw-check-udp.rsc.t" }}
-{{  template "parts/firewall-raw-prerouting.rsc.t" }}
 {{  template "parts/firewall-cleanup.rsc.t" (coll.Slice "raw" "prerouting" "output") -}}

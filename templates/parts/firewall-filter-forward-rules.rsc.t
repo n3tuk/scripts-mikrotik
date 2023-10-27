@@ -41,12 +41,6 @@ add chain="$runId:forward:rules" \
 
 {{-   end }}
 
-add chain="$runId:forward" \
-    src-address-list="$runId:internal" \
-    connection-state=new \
-    action=jump jump-target="$runId:forward:rules" \
-    comment="Process general rules which should apply forwarding network traffic"
-
 /ipv6 firewall filter
 
 {{-   range $rule := (ds "network").firewall.forwarding.rules }}
@@ -63,11 +57,5 @@ add chain="$runId:forward:rules" \
 {{-     end }}
     comment="{{ if (has $rule "comment") }}{{ $rule.comment }}{{ end }}"
 {{-   end }}
-
-add chain="$runId:forward" \
-    src-address-list="$runId:internal" \
-    connection-state=new \
-    action=jump jump-target="$runId:forward:rules" \
-    comment="Process general rules which should apply forwarding network traffic"
 
 {{- end }}
