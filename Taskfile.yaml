@@ -107,11 +107,11 @@ tasks:
             {examples,hosts,networks}/*.yaml
 
   export:
-    desc: Build and export the scripts for all hosts
+    desc: Build and export the scripts for all (or selected) hosts and exports
     summary: |-
-      Build and export all the required configuration scripts for all the
-      hosts needed (as set by the fuzzy search). By default, all export types
-      will be build and exported for all known hosts.
+      Build and export all the required configuration scripts for all the hosts
+      needed (as set by the fuzzy search). By default, all export types will be
+      build and exported for all known hosts.
     deps:
       - task: pre-checks
       - task: lint
@@ -123,12 +123,27 @@ tasks:
       - templates/exports/*.scr.t
       - templates/exports/*.rsc.t
       - templates/parts/*.rsc.t
-    vars:
-      exports:
     cmds:
       - cmd: |-
           scripts/exports {{ .CLI_ARGS }} \
             | parallel -kj 10 scripts/export
+
+  upload:
+    desc: Upload the scripts for all (or selected) hosts and export types
+    summary: |-
+      Upload all the required configuration scripts for all the hosts needed (as
+      set by the fuzzy search). By default, all export types will be uploaded
+      for all known hosts.
+    deps:
+      - task: export
+      - task: pre-checks
+      - task: directories
+    sources:
+      - exports/*
+    cmds:
+      - cmd: |-
+          scripts/exports {{ .CLI_ARGS }} \
+            | xargs -n 1 -r scripts/upload
 
   examples:
     desc: Build and export scripts based on the examples only

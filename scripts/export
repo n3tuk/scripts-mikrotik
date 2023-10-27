@@ -1,41 +1,20 @@
 #!/usr/bin/env bash
-source "$(dirname "${0}")/common.sh"
+# shellcheck disable=SC2154 # Some variables are managed in lib.sh
 set -ueo pipefail
 
-hosts_dir="hosts"
-networks_dir="networks"
-exports_dir="exports"
+source "$(dirname "${0}")/common.sh"
+source "$(dirname "${0}")/lib.sh"
 
-export=${1:-router.bridgend.n3t.uk:initialise}
-host=${export/:*/}
-export=${export/*:/}
-export_file="${exports_dir}/${host}-${export}"
-
-# netinstall-cli expects the script to have a extension of .scr rather than .rsc
-if [[ "${export}" == "netinstall" ]]; then
-  export_ext+="scr"
-else
-  export_ext+="rsc"
-fi
-
-info "${host}/${export}"
-
-if [ "${use_examples:-false}" == "true" ]; then
-  hosts_dir="examples"
-  networks_dir="examples"
-fi
+info "${host}:${export}.${export_ext}"
 
 declare -a gomplate_opts
 
-config_uri=$(mktemp --dry-run --tmpdir=${exports_dir} .XXXX-config.json)
-date=$(date --iso-8601=seconds)
-
-function cleanup {
-  rm -f "${config_uri}"
-}
-
+config_uri=$(mktemp --dry-run --tmpdir="${exports_dir}" .XXXX-config.json)
+cleanup() { rm -f "${config_uri}"; }
 trap cleanup EXIT
 trap cleanup SIGINT
+
+date=$(date --iso-8601=seconds)
 
 jq --null-input \
   --arg name "${host}" \
@@ -63,11 +42,15 @@ fi
 
 network_name=$(yq -r '.network' "${hosts_dir}/${host}.yaml")
 gomplate_opts+=("--datasource" "network=${networks_dir}/${network_name}.yaml")
+export_tmp=$(mktemp -u --suffix=.gomplate)
 
-if ! gomplate \
+if gomplate \
   "${gomplate_opts[@]}" \
   --template parts=templates/parts/ \
   --file "templates/${exports_dir}/${export}.${export_ext}.t" \
-  > "${export_file}.${export_ext}"; then
+  > "${export_tmp}"; then
+  mv "${export_tmp}" "${export_file}.${export_ext}"
+else
   error "Failed to export configuration script: ${export_file}.${export_ext}"
+  rm -f "${export_tmp}"
 fi
