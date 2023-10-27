@@ -27,15 +27,12 @@
 {{    if (has $v "ipv4") }}
 {{-     $network := (index ((net.ParseIPPrefix $v.ipv4.address).Range | strings.Split "-") 0) -}}
 {{-     $prefix := (index ($v.ipv4.address | strings.Split "/") 1) -}}
-{{-     $broadcast := (index ((net.ParseIPPrefix $v.ipv4.address).Range | strings.Split "-") 1) -}}
 
 /ip firewall address-list
 
 add list="$runId:vlans" address={{ $network }}/{{ $prefix }} \
     comment="{{ $bridge }}.{{ $v.id }}{{ if (has $v "comment") }}: {{ $v.comment }}{{ end }}"
 add list="$runId:vlan:{{ $v.name }}" address={{ $network }}/{{ $prefix }} \
-    comment="{{ $bridge }}.{{ $v.id }}{{ if (has $v "comment") }}: {{ $v.comment }}{{ end }}"
-add list="$runId:broadcasts" address={{ $broadcast }} \
     comment="{{ $bridge }}.{{ $v.id }}{{ if (has $v "comment") }}: {{ $v.comment }}{{ end }}"
 {{-     if (has $v "lists") }}
 {{-       range $i := $v.lists }}
@@ -64,14 +61,3 @@ add list="$runId:vlan:{{ $i }}" address={{ $network }}/{{ $prefix }} \
 {{-   end }}
 
 {{- end }}
-
-/ip firewall address-list
-
-# This can be installed by a genuine network, but is a global broadcast address
-# for some multicast and network services, so check if it exists before adding
-:if ( \
-  [ :len [ find where list="$runId:broadcasts" and address=255.255.255.255 ] ] = 0 \
-) do={
-  add list="$runId:broadcasts" address=255.255.255.255 \
-      comment="Global Broadcast address"
-}
