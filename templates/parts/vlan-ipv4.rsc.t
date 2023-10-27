@@ -60,12 +60,14 @@ set [ find where interface="{{ .interface }}" ] \
 
 {{-   else }}
 
+{{-     $gateway := (ds "host").bridge.ipv4.gateway }}
+
 /ip route
 :if ( \
   [ :len [ find where type=static and dst-address="0.0.0.0/0" ] ] = 0 \
-) do={ add dst-address="0.0.0.0/0" gateway="{{ $address }}" }
+) do={ add dst-address="0.0.0.0/0" gateway="{{ $gateway }}" }
 set [ find where type=static and dst-address="0.0.0.0/0" ] \
-    gateway="{{ $address }}" \
+    gateway="{{ $gateway }}" \
     comment="Default Gateway for {{ .comment }}"
 
 {{-   end }}

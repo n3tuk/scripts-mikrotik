@@ -3,6 +3,7 @@
 
 {{- $address := "" }}
 {{- $prefix := "" }}
+{{- $gateway := "" }}
 
 {{- if (has . "ipv6") }}
 {{-   $address = (index (.ipv6.address | strings.Split "/") 0) }}
@@ -14,6 +15,9 @@
                  (has (ds "host").bridge.ipv6 "address"))) }}
 {{-   $address = (index ((ds "host").bridge.ipv6.address | strings.Split "/") 0) }}
 {{-   $prefix = (index ((ds "host").bridge.ipv6.address | strings.Split "/") 1) }}
+{{-   if (has (ds "host").bridge.ipv6 "gateway") }}
+{{-     $gateway = (ds "host").bridge.ipv6.gateway }}
+{{-   end }}
 {{- end }}
 
 {{- if (ne $address "") }}
@@ -33,6 +37,19 @@ set [ find where interface="{{ .interface }}" and dynamic=no ] \
     no-dad={{ if (eq .name "management") }}yes{{ else }}no{{ end }} \
     advertise={{ if (and $slaac (eq (ds "host").type "router")) }}yes{{ else }}no{{ end }} \
     comment="{{ .name }} ({{ .comment }})"
+
+{{-   if (ne $gateway "") }}
+
+/ipv6 route
+
+:if ( \
+  [ :len [ find where dst-address="::/0" and dynamic=no ] ] = 0 \
+) do={ add dst-address="::/0" gateway="{{ $gateway }}" }
+set [ find where dst-address="::/0" and dynamic=no ] \
+    gateway="{{ $gateway }}" \
+    comment="Default Gateway for {{ .comment }}"
+
+{{-   end }}
 
 {{-   if (or (ne .name "management")
              (and (has . "ipv6")

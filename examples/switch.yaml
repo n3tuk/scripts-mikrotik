@@ -25,6 +25,7 @@ bridge:
     - management
   ipv4:
     address: 172.16.0.2/24
+    gateway: 172.16.0.1
   ipv6:
     address: 2f00:8086:8086:0::/64
   comment: Management Network
