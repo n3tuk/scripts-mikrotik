@@ -62,6 +62,9 @@ set verify-doh-cert=no
   check-certificate=no \
   dst-path="cacert.pem"
 
+# This is needed to ensure the file is ready for the import
+:delay 300ms
+
 /certificate
 
 {{  template "component" "Remove the Expired Certificates" }}
@@ -86,7 +89,7 @@ remove "cacert.pem"
 {{  template "component" "Configure the DNS Settings" }}
 
 /ip dns
-{{  if (eq (ds "host").name "router") -}}
+{{  if (eq (ds "host").type "router") -}}
 # This host is a router, so allow remote requests within the network
 # (protected via the firewall configuration for this host)
 set allow-remote-requests=yes
