@@ -22,6 +22,10 @@
 
 {{  template "item" (print $table " cleanup") }}
 
+# Allow some time for packets to be processed before removing any firewall
+# rules, helping to ensure a clean cut-over from old to new rules
+:delay 500ms
+
 {{- range $keys }}
 
 /{{ . }} firewall {{ $table }}
