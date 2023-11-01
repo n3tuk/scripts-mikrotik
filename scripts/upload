@@ -7,6 +7,11 @@ source "$(dirname "${0}")/lib.sh"
 
 info "${host}:${export}.rsc"
 
+if [[ "${export}" == "netinstall" ]]; then
+  error "netinstall.scr will not be uploaded!"
+  exit 0
+fi
+
 if [[ "${use_examples:-false}" == "true" ]]; then
   fatal "Cannot upload examples/ exports to hosts"
 fi
@@ -16,7 +21,7 @@ if [[ ! -f "${export_file}.${export_ext}" ]]; then
 fi
 
 sub-note "Checking host is alive..."
-if ! ping -4An -w1 -l3 -c3 "${host}" > /dev/null 2>&1; then
+if ! ping -An -w1 -l3 -c3 "${host}" > /dev/null 2>&1; then
   fatal "Cannot find host ${host}"
 fi
 
