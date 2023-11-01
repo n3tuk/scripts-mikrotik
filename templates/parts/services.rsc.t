@@ -127,7 +127,7 @@ add topics=critical \
     action=memory
 /system logging action
 set [ find where name="memory" ] \
-    memory-lines=10000 \
+    memory-lines={{ if (eq (ds "host").type "router") }}2500{{ else }}250{{ end }} \
     memory-stop-on-full=no
 
 /interface detect-internet
