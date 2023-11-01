@@ -69,7 +69,7 @@ set verify-doh-cert=no
 
 {{  template "component" "Remove the Expired Certificates" }}
 
-remove [ find where authority expired ]
+remove [ find where name ~ "^ca" and authority expired ]
 
 {{  template "component" "Import the New Certificates" }}
 
