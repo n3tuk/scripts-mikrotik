@@ -22,24 +22,6 @@
 set always-allow-password-login=no \
     forwarding-enabled=no
 
-{{  template "component" "Remove the Unknown/Deactivated Users" }}
-
-/user ssh-keys
-remove [
-  find where !( \
-       name={{
-    conv.Join (coll.Sort $known) " \\\n    or name="
-  }} )
-]
-
-/user
-remove [
-  find where !( \
-       name={{
-    conv.Join (coll.Sort $known) " \\\n    or name="
-  }} )
-]
-
 {{  template "component" "Configure the Active Users" }}
 
 {{- range $u, $v := (ds "network").users -}}
@@ -103,5 +85,23 @@ remove [
 {{-     end }}
 ]
 
-{{-   end -}}
-{{- end -}}
+{{-   end }}
+{{- end }}
+
+{{  template "component" "Remove the Unknown/Deactivated Users" }}
+
+/user ssh-keys
+remove [
+  find where !( \
+       name={{
+    conv.Join (coll.Sort $known) " \\\n    or name="
+  }} )
+]
+
+/user
+remove [
+  find where !( \
+       name={{
+    conv.Join (coll.Sort $known) " \\\n    or name="
+  }} )
+]
