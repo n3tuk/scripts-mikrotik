@@ -23,7 +23,7 @@ set forwarding-enabled=no \
     host-key-size=4096 \
     strong-crypto=yes
 
-{{- if (and (eq (ds "host").export "ssh")
+{{- if (and (eq (ds "host").export "certificates")
             (and (has (ds "host").settings "ssh")
                  (has (ds "host").settings.ssh "key"))) }}
 
