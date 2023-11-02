@@ -1,10 +1,9 @@
 # -- templates/parts/interfaces.rsc.t
 {{- /* vim:set ft=routeros: */}}
-
-{{- $i_defaults := coll.Dict "enabled" false "type" "ethernet" "vlan" "blocked" "comment" "Unused" }}
-
 # Reconfigure the base interfaces for this host into a standard sets of names
 # and settings for the internal network.
+
+{{- $i_defaults := coll.Dict "enabled" false "type" "ethernet" "vlan" "blocked" "comment" "Unused" }}
 
 {{  template "section" "Set up Physical Interfaces" }}
 

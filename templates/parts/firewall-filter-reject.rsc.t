@@ -8,9 +8,11 @@
 
 /ip firewall filter
 
-{{- /* Don't worry about rate-limiting controls when building the
-       netinstall-based firewalls. We'll just configure all the packets to be
-       dropped silently until a full firewall is installed. */}}
+{{- /*
+# Don't worry about rate-limiting controls when building the netinstall-based
+# firewalls. We'll just configure all the packets to be dropped silently until a
+# full firewall is installed.
+*/}}
 
 {{- if (ne (ds "host").export "netinstall") }}
 

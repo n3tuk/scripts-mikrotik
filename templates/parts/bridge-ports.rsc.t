@@ -28,8 +28,10 @@
 {{-       $cost = $i.cost }}
 {{-     end }}
 
-{{- /* Ensure that during bootstrap only management or blocked is allowed for
-       the default VLAN on any physical interface */}}
+{{- /*
+# Ensure that during bootstrap only management or blocked is allowed for the
+# default VLAN on any physical interface
+*/}}
 {{-     if (eq (ds "host").export "netinstall") }}
 {{-       if (and (has $i "vlan") (ne $i.vlan "management")) }}
 {{-         $i = $i | merge (coll.Dict "vlan" "blocked"

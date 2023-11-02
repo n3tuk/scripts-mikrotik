@@ -11,8 +11,6 @@
 {{-   $interface := print $bridge "." (printf "%02d" $v.id) }}
 
 {{-   if (not $v.enabled) -}}
-
-{{- /* Only output the comment and output if we have VLANs to disable */}}
 {{-     if (not $comment) -}}
 {{-       $comment = true }}
 

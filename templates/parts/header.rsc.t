@@ -1,9 +1,11 @@
 # RouterOS Configuration Script
 {{- /* vim:set ft=routeros: */}}
 
-{{- /* This header is included by all exports, so the following section will
-       define a set of common templates used to facilitate the processing of
-       outputs for the script and user. */}}
+{{- /*
+# This header is included by all exports, so the following section will define a
+# set of common templates used to facilitate the processing of outputs for the
+# script and user.
+*/}}
 
 {{- define "section" -}}
 :log info "{{ (ds "host").export }}.rsc/$runId: {{ . }}"
