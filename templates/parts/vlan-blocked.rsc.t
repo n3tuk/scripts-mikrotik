@@ -16,7 +16,10 @@
 {{- $untagged := coll.Slice }}
 {{- range $i := (ds "host").interfaces }}
 {{-   $i = merge $i $i_defaults }}
-{{-   if (and $i.bridge (ne $i.vlan "management")) }}
+{{-   if (and (eq (ds "host").export "netinstall")
+              (and $i.bridge (ne $i.vlan "management"))) }}
+{{-     $untagged = $untagged | append $i.name }}
+{{-   else if (and $i.bridge (eq $i.vlan "blocked")) }}
 {{-     $untagged = $untagged | append $i.name }}
 {{-   end }}
 {{- end }}
