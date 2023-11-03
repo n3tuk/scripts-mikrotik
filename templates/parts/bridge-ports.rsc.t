@@ -31,6 +31,9 @@
 {{-   $interface = merge $interface $i_defaults }}
 {{-   if (and (eq $interface.type "wireless")
               (has $interface "vlans")) }}
+{{-     if (eq (ds "host").export "netinstall") }}
+{{-       continue }}
+{{-     end }}
 {{-     $vlans := $interface.vlans }}
 {{-     $interface = $interface | coll.Omit "vlans" }}
 {{-     $interfaces = $interfaces | append ($interface | merge (coll.Dict "comment" (print $interface.comment " (" $interface.vlan ")"))) }}
