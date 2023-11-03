@@ -188,12 +188,16 @@ The `update.rsc` export is in effect a superset of the following exports, with
 two exceptions:
 
 1. The [SSH Host Private Key][ros-ssh] is not exported as this should normally
-   only be set once. To set the host private key, [`ssh.rsc`](#sshrsc) should be
-   exported and run explicitly once the host has been initialised or reset.
+   only be set once. Use [`certificates.rsc`](#certificatesrsc) to set the host
+   private key, and as such should be exported and run explicitly once the host
+   has been initialised or reset.
+1. The [TLS Certificates][ros-certificates] needed to provide access to the
+   WebFig and API services over HTTPS.
 1. The [CAPsMAN][ros-capsman] Host Certificate and Client Authority Certificate
    will not be set, nor the Client Certificate on any Access Points.
 
 [ros-ssh]: https://help.mikrotik.com/docs/display/ROS/SSH
+[ros-certificates]: https://help.mikrotik.com/docs/display/ROS/Certificates
 [ros-capsman]: https://help.mikrotik.com/docs/display/ROS/CAPsMAN
 
 This exported script is therefore the default script to be run once a device has
@@ -204,15 +208,17 @@ If the update needs to be more targeted, there are exported scripts to
 facilitate smaller sub-sets of changes, such as [`network.rsc`](#networkrsc) and
 [`firewall.rsc`](#firewallrsc).
 
-### `ssh.rsc`
+### `certificates.rsc`
 
 ```console
-task export -- ssh
+task export -- certificates
 ```
 
-The `ssh.rsc` export provides SSH-specific settings, should they be changed, but
-more explicitly, allows the configuration of the Host Private Key (and hence
-public key provided for clients to verify the host is who we expect them to be).
+The `certificates.rsc` export provides SSH- and certificate-specific and
+settings, should they be changed. More explicitly, this allows the configuration
+of the Host Private Key (and hence public key provided for clients to verify the
+host is who we expect them to be) and certificate public and private keys, which
+should be protected.
 
 ### `network.rsc`
 
