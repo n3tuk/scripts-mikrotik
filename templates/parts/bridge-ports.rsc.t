@@ -45,24 +45,33 @@
   [ :len [ find where bridge={{ $bridge }} and interface={{ $i.name}} ] ] = 0 \
 ) do={ add bridge={{ $bridge }} interface={{ $i.name }} }
 set [ find where bridge={{ $bridge }} and interface={{ $i.name }} ] \
-    path-cost={{ $cost }} internal-path-cost={{ $cost }} \
+    path-cost={{ $cost }} \
+    internal-path-cost={{ $cost }} \
 {{-     if (has $i "vlan") }}
 {{-       range $v := (ds "network").vlans }}
 {{-         if (eq $i.vlan $v.name) }}
-    pvid={{ $v.id }} ingress-filtering=yes
+    pvid={{ $v.id }} \
+    ingress-filtering=yes
 {{-         end }}
 {{-       end }}
 {{-     else }}
-    pvid={{ $blocked }} ingress-filtering=yes
+    pvid={{ $blocked }} \
+    ingress-filtering=yes
 {{-     end }}
 
-{{-     if (and (and (has $i "vlan") (ne $i.vlan "blocked")) (has $i "vlans")) }} \
-    frame-types=admit-all
+{{-     if (and (and (has $i "vlan")
+                     (ne $i.vlan "blocked"))
+                (has $i "vlans")) }} \
+    frame-types=admit-all \
+    edge=yes-discover
 {{-     else if (has $i "vlans") }} \
-    frame-types=admit-only-vlan-tagged
+    frame-types=admit-only-vlan-tagged \
+    edge=no-discover
 {{-     else if (has $i "vlan") }} \
-    frame-types=admit-only-untagged-and-priority-tagged
-{{-     end }}
+    frame-types=admit-only-untagged-and-priority-tagged \
+    edge=yes
+{{-     end }} \
+    point-to-point=auto
 
 {{-     if (has $i "comment") }} \
     comment="{{ $i.comment }}"
