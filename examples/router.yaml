@@ -15,12 +15,6 @@ name: router
 # repository.
 network: network
 
-# Define whether the source of all the data for this host should only come
-# from the local file (i.e. this file), or whether a Vault server should be
-# accessed for values which are merged over the top of this file before
-# processing. Values should only be local or vault.
-source: local
-
 # Define the type of the device being configured, which should be one of router,
 # switch, or ap (access point), so parts of the configurations and be
 # specifically updated to the purpose of this host.
@@ -31,8 +25,8 @@ type: router
 # overrides are kept. Authentication is not handled by this tool; a VAULT_TOKEN
 # or other environment configuration is expected to permit the required access.
 # vault:
-#   host: vault.pip3.uk
-#   path: mikrotik/host/router.bridgend.n3t.uk
+#   host: vault.example.com
+#   path: mikrotik/host/router
 
 # Set model and description to any value you like, as these are just metadata
 # values which are included in the header of any exported script to provide
@@ -49,6 +43,11 @@ settings:
     # openssl genpkey -algorithm ed25519
     key: |
       -- PRIVATE KEY --
+  ssl:
+    key: |
+      -- PRIVATE KEY --
+    certificate: |
+      -- CERTIFICATE --
 
   # Set the timezone for this server to properly configure the local time and
   # any checks for summer/winter times. This is based on the standard tz
@@ -91,6 +90,7 @@ bridge:
     address: 172.16.0.1/24
   ipv6:
     address: 2f00:8086:8086:0::/64
+    gateway: fe80::7a9a:18ff:fe49:b230%bri01.10
   comment: Management Network
 
 interfaces:
@@ -99,16 +99,16 @@ interfaces:
   # set, then the interface will be renamed from original to name during
   # initialisation of the host via the netinstall script.
   - name: wan01
-    enabled: true
     original: ether1
+    enabled: true
     bridge: false
     mtu: 1500
     l2mtu: 1592
     comment: Zen Internet (FTTP)
 
   - name: mgt01
-    enabled: true
     original: ether2
+    enabled: true
     # Define the cost of this port on this bridge interface, which will be
     # factored in as part of the calculation to the root bridge. The value
     # should be 20Tbps/(interface speed), so:
@@ -121,32 +121,27 @@ interfaces:
 
   - name: gbe01
     original: ether3
-    cost: 20000
-    # Any individual interface can be set to disabled by setting enabled here to
-    # false. If enabled is set to true, or enabled is not set, then the
-    # interface is set to enabled.
 
   - name: gbe02
     original: ether4
-    cost: 20000
 
   - name: gbe03
     original: ether5
-    cost: 20000
 
   - name: gbe04
     original: ether6
-    cost: 20000
 
   - name: gbe05
     original: ether7
-    cost: 20000
 
   - name: gbe06
     original: ether8
-    cost: 20000
 
   - name: xfp01
     enabled: true
     original: sfp-plus1
+    vlans:
+      - management
+      - private
+      - guest
     cost: 2000 # 10GbE

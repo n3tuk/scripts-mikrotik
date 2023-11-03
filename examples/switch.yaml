@@ -9,7 +9,6 @@
 host: switch1
 type: switch
 network: network
-source: local
 
 model: CRS328-24P-4S+RM
 description: |-
@@ -17,10 +16,19 @@ description: |-
 
 settings:
   timezone: Europe/London
+  ssh:
+    key: |
+      -- PRIVATE KEY --
+  ssl:
+    key: |
+      -- PRIVATE KEY --
+    certificate: |
+      -- CERTIFICATE --
 
 bridge:
   name: bri01
   original: bridge
+  priority: 0x1000
   vlans:
     - management
   ipv4:
@@ -28,179 +36,102 @@ bridge:
     gateway: 172.16.0.1
   ipv6:
     address: 2f00:8086:8086:0::/64
+    gateway: fe80::7a7a:10ff:fe69:ee30%bri01.10
   comment: Management Network
 
 interfaces:
   - name: gbe01
     original: ether1
-    bridge: bri01
-    cost: 20000
+    enabled: true
+    vlan: private
     comment: Desktop Computer
 
   - name: gbe02
     original: ether2
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe03
     original: ether3
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe04
     original: ether4
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe05
     original: ether5
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe06
     original: ether6
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe07
     original: ether7
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe08
     original: ether8
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe09
     original: ether9
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe10
     original: ether10
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe11
     original: ether11
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe12
     original: ether12
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe13
     original: ether13
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe14
     original: ether14
-    bridge: bri01
-    cost: 20000
-    enabled: false
-
-  - name: gbe15
-    original: ether15
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe16
     original: ether16
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe17
     original: ether17
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe18
     original: ether18
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe19
     original: ether19
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe20
     original: ether20
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe21
     original: ether21
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe22
     original: ether22
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe22
     original: ether22
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe23
     original: ether23
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: gbe24
     original: ether24
-    bridge: bri01
-    cost: 20000
-    enabled: false
 
   - name: xfp01
     original: sfp-plus1
-    bridge: bri01
-    cost: 2000 # 10GbE
     enabled: true
+    vlans:
+      - management
+      - private
+      - guest
+    cost: 2000
 
   - name: xfp02
     original: sfp-plus2
-    bridge: bri01
     cost: 2000
-    enabled: false
 
   - name: xfp03
     original: sfp-plus3
-    bridge: bri01
     cost: 2000
-    enabled: false
 
   - name: xfp04
     original: sfp-plus4
-    bridge: bri01
     cost: 2000
-    enabled: false

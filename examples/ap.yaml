@@ -8,7 +8,6 @@
 host: ap1
 type: ap
 network: network
-source: local
 
 model: cAP AC
 description: |-
@@ -16,10 +15,19 @@ description: |-
 
 settings:
   timezone: Europe/London
+  ssh:
+    key: |
+      -- PRIVATE KEY --
+  ssl:
+    key: |
+      -- PRIVATE KEY --
+    certificate: |
+      -- CERTIFICATE --
 
 bridge:
   name: bri01
   original: bridge
+  priority: 0x9000
   vlans:
     - management
   ipv4:
@@ -27,18 +35,34 @@ bridge:
     gateway: 172.16.0.1
   ipv6:
     address: 2f00:8086:8086:0::/64
+    gateway: fe80::7a7a:10ff:fe69:ee30%bri01.10
   comment: Management Network
 
 interfaces:
   - name: gbe01
     original: ether1
-    bridge: bri01
-    cost: 20000
+    enabled: true
     comment: switch1 (trunk)
 
   - name: gbe02
     original: ether2
-    bridge: bri01
-    cost: 20000
-    comment: Unusued
-    enabled: false
+
+  - name: wfi24
+    original: wlan1
+    enabled: true
+    type: wireless
+    frequency: 2412
+    vlan: private
+    vlans:
+      - guest
+    comment: 2.4Ghz WiFi Network
+
+  - name: wfi50
+    original: wlan2
+    enabled: true
+    type: wireless
+    frequency: 5180
+    vlan: private
+    vlans:
+      - guest
+    comment: 5Ghz WiFi Network

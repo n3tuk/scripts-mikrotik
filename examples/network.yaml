@@ -3,6 +3,8 @@ settings:
   ntp_servers:
     - address: 172.16.1.1
       comment: Network NTP Server (router)
+  wifi:
+    country: united kingdom
 
 ranges:
   internal:
@@ -13,6 +15,8 @@ ranges:
     - 2a00:1098:82:e8::/64
 
 dns:
+  resolver:
+    doh: https://one.one.one.one/dns-query
   static:
     - name: one.one.one.one
       ttl: 1h
@@ -26,26 +30,6 @@ dns:
           type: AAAA
         - address: 2606:4700:4700::1001
           type: AAAA
-    - name: cloudflare-dns.com
-      ttl: 5m
-      comment: Cloudflare DNS over HTTPS/TLS
-      addresses:
-        - address: 104.16.248.249
-          type: A
-        - address: 104.16.249.249
-          type: A
-        - address: 2606:4700:6810::f8f9
-          type: AAAA
-        - address: 2606:4700:6810::f9f9
-          type: AAAA
-    - name: dns64.cloudflare-dns.com
-      ttl: 1h
-      comment: Cloudflare DNS64 over HTTPS/TLS
-      addresses:
-        - address: 2606:4700:4700::64
-          type: AAAA
-        - address: 2606:4700:4700::6400
-          type: AAAA
 
 mstp:
   region: core
@@ -55,50 +39,67 @@ vlans:
   - id: 10
     enabled: true
     name: management
-    bridge: bri01
     comment: Management Network
     ipv4:
       address: 172.16.0.1/24
       pool: 172.16.0.250-172.16.0.254
       lease: 8h
     ipv6:
-      address: 2f00:8086:8086:0::/64
+      address: 2001:0db8:8086:0::/64
       lease: 8h
-    lists:
-      - fw-internal-vlan-management
+    firewall:
+      rules:
+        - comment: Allow access to the Internet (HTTPS)
+          dst-address-list: "!internal"
+          protocol: tcp
+          dst-port: 80,443
+          action: accept
+        - comment: Allow access to the Internet (HTTPS/2)
+          dst-address-list: "!internal"
+          protocol: udp
+          dst-port: 443
+          action: accept
 
   - id: 99
     name: blocked
-    bridge: bri01
     comment: Blocked Network Interfaces
 
   - id: 20
     name: private
-    bridge: bri01
     comment: General Private Network
     ipv4:
       address: 172.16.1.1/24
       pool: 172.16.1.200-172.16.1.250
       lease: 8h
     ipv6:
-      address: 2f00:8086:8086:1::/64
+      address: 2001:0db8:8086:1::/64
       lease: 8h
-    lists:
-      - fw-internal-vlan-private
+    wifi:
+      ssid: Home WiFi
+      psk: this-is-the-psk-for-home-wifi
+    firewall:
+      rules:
+        - comment: Allow access to all networks and the Internet
+          action: accept
 
   - id: 21
-    name: n3tuk-guest
-    bridge: bri01
+    name: guest
     comment: Private, Limited-Access Network for Guests
     ipv4:
       address: 172.16.2.1/26
       pool: 172.16.2.2-172.16.2.254
       lease: 15m
     ipv6:
-      address: 2f00:8086:8086:2::/64
+      address: 2001:0db8:8086:2::/64
       lease: 15m
-    lists:
-      - fw-internal-vlan-guest
+    wifi:
+      ssid: Private WiFi
+      psk: this-is-the-psk-for-private-wifi
+    firewall:
+      rules:
+        - comment: Allow access to the Internet
+          dst-address-list: "!internal"
+          action: accept
 
 firewall:
   forwarding:
@@ -106,22 +107,41 @@ firewall:
       - comment: Remote Access to Web Server
         protocol: tcp
         port: 8080
-        interface: wan01
+        # This is the external IP address which traffic should be directed to,
+        # so that it can be processed and redirected to the ipv4 address below
+        dst-address: 198.51.100.22
+        # If hairpin NAT is required for this port, define the VLAN address list
+        # which should be matched for masquerading the internal traffic
+        src-address-list: vlan:guests
         # By setting ipv4, a rule will be created in the nat/dstnat chain which
         # re-writes IPv4 destination address of the packet to the above protocol
         # and port from the named interface, and a corresponding rule in the
         # filter/forward chain will automatically allow dstnat'd packets through
-        ipv4: 172.27.1.254
+        ipv4: 172.27.2.254
         # By setting ipv6, a rule will be created in the filter/forward chain
         # which will allow requests being passed to this address for the above
         # protocol/port to be permitted through from the above interface
-        ipv6: 2f00:8086:8086:1:ed62:f58b:125d:3226
+        ipv6: 2001:0db8:8086:2:ed62:f58b:125d:3226
       - comment: Remote Access to Web Server
         protocol: tcp
         port: 8443
-        interface: wan01
-        ipv4: 172.27.1.254
-        ipv6: 2f00:8086:8086:1:ed62:f58b:125d:3226
+        dst-address: 198.51.100.22
+        src-address-list: vlan:guests
+        ipv4: 172.27.2.254
+        ipv6: 2001:0db8:8086:2:ed62:f58b:125d:3226
+
+    services:
+      - comment: HTTPS access to Owain for external services
+        protocol: tcp
+        port: 80,443
+        dst-address: 198.51.100.104
+        ipv6: 2001:0db8:1234::b72c
+      - comment: HTTPS access to Owain for internal services
+        protocol: tcp
+        port: 80,443
+        ipv4: 172.27.1.1
+
+    rules: []
 
 users:
   admin:
@@ -133,8 +153,15 @@ users:
       - name: jonathan-laptop
         type: ssh-rsa
         contents: >
-          AAAAB3NzaC1yc....==
+          AAAAB3NzaC1yc...==
       - name: jonathan-desktop
         type: ssh-rsa
         contents: >
-          AAAAB3NzaC1yc....==
+          AAAAB3NzaC1yc...==
+
+certificates:
+  - name: private-ca
+    contents: |
+      -----BEGIN CERTIFICATE-----
+      MIIDBjCCAme...AA==
+      -----END CERTIFICATE-----
