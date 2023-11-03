@@ -10,6 +10,9 @@
 
 {{  template "parts/bridge-ports.rsc.t" }}
 {{  template "parts/bridge-interface.rsc.t" }}
+# Configure the MSTP instance and attach the known VLANs to it to allow it to
+# monitor all the connections and detect loops or issues with the network
+/interface bridge msti
 
 {{- $vlans := coll.Slice }}
 {{- $blocked := coll.Dict }}
@@ -22,7 +25,6 @@
 {{-   end }}
 {{- end }}
 
-/interface bridge msti
 :if ( \
   [ :len [ find where bridge="{{ $bridge }}" and identifier=1 ] ] = 0 \
 ) do={ add bridge="{{ $bridge }}" identifier=1 vlan-mapping={{ conv.Join (coll.Sort $vlans) "," }} }

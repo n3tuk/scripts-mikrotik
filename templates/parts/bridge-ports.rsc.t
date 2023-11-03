@@ -20,12 +20,46 @@
 
 /interface bridge port
 
-{{- range $i := (ds "host").interfaces }}
-{{-   if (not (and (has $i "bridge") (not $i.bridge))) }}
+{{- /*
+# The wireless interfaces need to be split in to individual interfaces for each
+# of the SSIDs, so pre-process the interfaces list from the host configuration
+# to fake the creation of these interfaces before creating the ports
+*/}}
+
+{{- $interfaces := coll.Slice }}
+{{- range $interface := (ds "host").interfaces }}
+{{-   $interface = merge $interface $i_defaults }}
+{{-   if (and (eq $interface.type "wireless")
+              (has $interface "vlans")) }}
+{{-     $vlans := $interface.vlans }}
+{{-     $interface = $interface | coll.Omit "vlans" }}
+{{-     $interfaces = $interfaces | append ($interface | merge (coll.Dict "comment" (print $interface.comment " (" $interface.vlan ")"))) }}
+{{-     range $i, $vlan := $vlans }}
+{{-       $virtual := $interface }}
+{{-       range $v := (ds "network").vlans }}
+{{-         $v := merge $v $v_defaults }}
+{{-         if (and (eq $v.name $vlan)
+                    (has $v "wifi")) }}
+{{-           $virtual = $virtual | merge (coll.Dict "name" (print $interface.name "." $v.id)
+                                                     "vlan" $v.name
+                                                     "comment" (print $interface.comment " (" $vlan ")")) }}
+{{-           $interfaces = $interfaces | append $virtual }}
+{{-         end }}
+{{-       end }}
+{{-     end }}
+{{-   else }}
+{{-     $interfaces = $interfaces | append $interface }}
+{{-   end}}
+{{- end}}
+
+{{- range $interface := $interfaces }}
+{{-   if (not (and (has $interface "bridge") (not $interface.bridge))) }}
 
 {{-     $cost := 20000 }}
-{{-     if (has $i "cost") }}
-{{-       $cost = $i.cost }}
+{{-     if (has $interface "cost") }}
+{{-       $cost = $interface.cost }}
+{{-     else if (eq $interface.type "wireless") }}
+{{-       $cost = 80000 }}
 {{-     end }}
 
 {{- /*
@@ -33,23 +67,23 @@
 # default VLAN on any physical interface
 */}}
 {{-     if (eq (ds "host").export "netinstall") }}
-{{-       if (and (has $i "vlan") (ne $i.vlan "management")) }}
-{{-         $i = $i | merge (coll.Dict "vlan" "blocked"
+{{-       if (and (has $interface "vlan") (ne $interface.vlan "management")) }}
+{{-         $interface = $interface | merge (coll.Dict "vlan" "blocked"
                                        "frame_types" "admit-only-untagged-and-priority-tagged") }}
 {{-       end }}
 {{-     end }}
 
-{{      template "item" (print $bridge "/" $i.name) }}
+{{      template "item" (print $bridge "/" $interface.name) }}
 
 :if ( \
-  [ :len [ find where bridge={{ $bridge }} and interface={{ $i.name}} ] ] = 0 \
-) do={ add bridge={{ $bridge }} interface={{ $i.name }} }
-set [ find where bridge={{ $bridge }} and interface={{ $i.name }} ] \
+  [ :len [ find where bridge={{ $bridge }} and interface={{ $interface.name}} ] ] = 0 \
+) do={ add bridge={{ $bridge }} interface={{ $interface.name }} }
+set [ find where bridge={{ $bridge }} and interface={{ $interface.name }} ] \
     path-cost={{ $cost }} \
     internal-path-cost={{ $cost }} \
-{{-     if (has $i "vlan") }}
+{{-     if (has $interface "vlan") }}
 {{-       range $v := (ds "network").vlans }}
-{{-         if (eq $i.vlan $v.name) }}
+{{-         if (eq $interface.vlan $v.name) }}
     pvid={{ $v.id }} \
     ingress-filtering=yes
 {{-         end }}
@@ -59,22 +93,23 @@ set [ find where bridge={{ $bridge }} and interface={{ $i.name }} ] \
     ingress-filtering=yes
 {{-     end }}
 
-{{-     if (and (and (has $i "vlan")
-                     (ne $i.vlan "blocked"))
-                (has $i "vlans")) }} \
+{{-     if (and (and (has $interface "vlan")
+                     (ne $interface.vlan "blocked"))
+                (has $interface "vlans")) }} \
     frame-types=admit-all \
     edge=yes-discover
-{{-     else if (has $i "vlans") }} \
+{{-     else if (has $interface "vlans") }} \
     frame-types=admit-only-vlan-tagged \
     edge=no-discover
-{{-     else if (has $i "vlan") }} \
+{{-     else if (has $interface "vlan") }} \
     frame-types=admit-only-untagged-and-priority-tagged \
     edge=yes
 {{-     end }} \
-    point-to-point=auto
+    point-to-point=auto \
+    multicast-router=disabled
 
-{{-     if (has $i "comment") }} \
-    comment="{{ $i.comment }}"
+{{-     if (has $interface "comment") }} \
+    comment="{{ $interface.comment }}"
 {{-     end }}
 
 {{-   end -}}
@@ -83,15 +118,15 @@ set [ find where bridge={{ $bridge }} and interface={{ $i.name }} ] \
 remove [
   find where bridge="{{ $bridge }}" \
 {{- $first := true }}
-{{- range $i := (ds "host").interfaces }}
-{{-   $i = merge $i $i_defaults }}
-{{-   if (or (not (has $i "bridge"))
-             (and (has $i "bridge") $i.bridge)) }}
+{{- range $interface := $interfaces }}
+{{-   $interface = merge $interface $i_defaults }}
+{{-   if (or (not (has $interface "bridge"))
+             (and (has $interface "bridge") $interface.bridge)) }}
 {{-     if $first }}
 {{-       $first = false }}
-      and !( interface="{{ $i.name }}"
+      and !( interface="{{ $interface.name }}"
 {{-     else }} \
-          or interface="{{ $i.name }}"
+          or interface="{{ $interface.name }}"
 {{-     end }}
 {{-   end }}
 {{- end }} )

@@ -9,7 +9,7 @@
 
 /interface
 
-{{  template "component" "Configure the Interfaces" }}
+{{  template "component" "Configure the Physical Interfaces" }}
 
 {{- $interfaces := coll.Slice }}
 {{- range $i := (ds "host").interfaces }}
@@ -29,14 +29,14 @@
 
 {{-   else }}
 
-{{      template "item" $i.name }}
-
 {{-   end }}
 
 {{-   if (and (eq $i.type "wireless")
               (not (eq (ds "host").export "netinstall"))) }}
 {{-     continue }}
 {{-   end }}
+
+{{      template "item" $i.name }}
 
 set [ find where name={{ $i.name }} ] \
 {{-   if (or (eq (ds "host").export "netinstall")

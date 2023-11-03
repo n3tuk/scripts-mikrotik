@@ -29,13 +29,19 @@
 
 {{-     range $i := (ds "host").interfaces -}}
 {{-       $i = merge $i $i_defaults }}
-{{-       if (and (or (not (has $i "bridge")) $i.bridge)
-                  (or (eq $i.type "ethernet") (eq $i.type "bond"))) }}
+{{-       if (or (not (has $i "bridge")) $i.bridge) }}
 {{-         if (and (has $i "vlan") (eq $i.vlan $v.name)) -}}
 {{-           $untagged = $untagged | append $i.name -}}
 {{-         else -}}
 {{-           if (and (has $i "vlans") (has $i.vlans $v.name)) }}
-{{-             $tagged = $tagged | append $i.name }}
+{{-             if (eq $i.type "wireless") }}{{- /*
+                  # Even through wireless interfaces have vlans support for
+                  # virtual interfaces, they are attached as untagged ports as
+                  # each virtual interface becomes a dedicated interface  */}}
+{{-               $untagged = $untagged | append (print $i.name "." $v.id) }}
+{{-             else }}
+{{-               $tagged = $tagged | append $i.name }}
+{{-             end }}
 {{-           end }}
 {{-         end }}
 {{-       end }}
