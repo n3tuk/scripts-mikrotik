@@ -53,6 +53,7 @@
 {{      template "item" $v.interface }}
 
 /interface bridge vlan
+
 :if ( \
   [ :len [ find where bridge="{{ $bridge }}" and vlan-ids="{{ $v.id }}" and dynamic=no ] ] = 0 \
 ) do={ add bridge="{{ $bridge }}" vlan-ids="{{ $v.id }}" }
@@ -64,6 +65,7 @@ set [ find where bridge="{{ $bridge }}" and vlan-ids="{{ $v.id }}" ] \
 {{-     if $router }}
 
 /interface vlan
+
 :if ( \
   [ :len [ find where interface="{{ $bridge }}" and vlan-id="{{ $v.id }}" ] ] = 0 \
 ) do={
@@ -72,6 +74,7 @@ set [ find where bridge="{{ $bridge }}" and vlan-ids="{{ $v.id }}" ] \
       name="{{ $v.interface }}" \
       mtu={{ if (has (ds "host").settings "mtu") }}{{ (ds "host").settings.mtu }}{{ else }}1500{{ end }} \
 }
+
 set [ find where interface="{{ $bridge }}" and vlan-id="{{ $v.id }}" ] \
     name="{{ $v.interface }}" \
     use-service-tag=no \
@@ -81,6 +84,7 @@ set [ find where interface="{{ $bridge }}" and vlan-id="{{ $v.id }}" ] \
 {{  template "parts/vlan-ipv6.rsc.t" $v }}
 
 /interface list member
+
 :if ( \
   [ :len [ find where list="internal" and interface="{{ $v.interface }}" ] ] = 0 \
 ) do={ add list="internal" interface="{{ $v.interface }}" }

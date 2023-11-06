@@ -32,6 +32,7 @@
 {{  template "item" (print $bridge "." $management.id) }}
 
 /interface bridge vlan
+
 :if ( \
   [ :len [ find where bridge="{{ $bridge }}" and vlan-ids={{ $management.id }} ] ] = 0 \
 ) do={ add bridge="{{ $bridge }}" vlan-ids={{ $management.id }} }
@@ -40,6 +41,7 @@ set [ find where bridge="{{ $bridge }}" and vlan-ids={{ $management.id }} ] \
     comment="{{ $management.comment }}"
 
 /interface vlan
+
 :if ( \
   [ :len [ find where interface="{{ $bridge }}" and vlan-id={{ $management.id }} ] ] = 0 \
 ) do={
@@ -48,6 +50,7 @@ set [ find where bridge="{{ $bridge }}" and vlan-ids={{ $management.id }} ] \
       name="{{ $management.interface }}" \
       mtu={{ if (has (ds "host").settings "mtu") }}{{ (ds "host").settings.mtu }}{{ else }}1500{{ end }}
 }
+
 set [ find where interface={{ $bridge }} and vlan-id={{ $management.id }} ] \
     name="{{ $management.interface }}"\
     use-service-tag=no \

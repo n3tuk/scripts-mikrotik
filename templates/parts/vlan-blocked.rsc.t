@@ -27,6 +27,7 @@
 {{  template "item" (print $bridge "." $blocked.id) }}
 
 /interface bridge vlan
+
 :if ( \
   [ :len [ find where bridge={{ $bridge }} and vlan-ids={{ $blocked.id }} ] ] = 0 \
 ) do={ add bridge={{ $bridge }} vlan-ids={{ $blocked.id }} }
