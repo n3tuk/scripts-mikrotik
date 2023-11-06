@@ -75,8 +75,7 @@ remove [ find where interface="{{ .interface }}" ]
 ) do={ add name="{{ .name }}" prefix="{{ .ipv6.pool }}" prefix-length=64 }
 set [ find where name="{{ .name }}" ] \
     prefix="{{ .ipv6.pool }}" \
-    prefix-length=64 \
-    disabled=no
+    prefix-length=64
 
 /ipv6 dhcp-server
 
