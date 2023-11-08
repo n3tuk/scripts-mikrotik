@@ -82,6 +82,17 @@ set [ find where interface="{{ .interface }}" ] \
     address-pool="{{ .name }}" lease-time="{{ .ipv4.lease }}" \
     comment="{{ .comment }}"
 
+{{-   else if (eq $type "static") }}
+
+/ip pool
+remove [ find where name="{{ .name }}" ]
+
+/ip dhcp-server network
+remove [ find where address="{{ $network }}/{{ $prefix }}" ]
+
+/ip dhcp-server
+remove [ find where interface="{{ .interface }}" ]
+
 {{-   end }}
 {{- else }}
 
