@@ -12,6 +12,10 @@
 {{-   if (has .ipv4 "type") }}
 {{-     $type = .ipv4.type }}
 {{-   end }}
+{{-   $gateway = $address }}
+{{-   if (has .ipv4 "gateway") }}
+{{-     $gateway = .ipv4.gateway }}
+{{-   end }}
 {{- end }}
 
 {{- if (and (eq .name "management")
@@ -19,9 +23,6 @@
                  (has (ds "host").bridge.ipv4 "address"))) }}
 {{-   $address = (index ((ds "host").bridge.ipv4.address | strings.Split "/") 0) }}
 {{-   $prefix = (index ((ds "host").bridge.ipv4.address | strings.Split "/") 1) }}
-{{-   if (has (ds "host").bridge.ipv4 "gateway") }}
-{{-     $gateway = (ds "host").bridge.ipv4.gateway }}
-{{-   end }}
 {{- end }}
 
 {{- if (ne $address "") }}
@@ -66,9 +67,9 @@ set [ find where name="{{ .name }}" ] \
   [ :len [ find where address="{{ $network }}/{{ $prefix }}" ] ] = 0 \
 ) do={ add address="{{ $network }}/{{ $prefix }}" }
 set [ find where address="{{ $network }}/{{ $prefix }}" ] \
-    gateway="{{ $address }}" \
-    dns-server="{{ $address }}" \
-    ntp-server="{{ $address }}" \
+    gateway="{{ $gateway }}" \
+    dns-server="{{ $gateway }}" \
+    ntp-server="{{ $gateway }}" \
     comment="{{ .name }} ({{ .comment }})"
 
 /ip dhcp-server

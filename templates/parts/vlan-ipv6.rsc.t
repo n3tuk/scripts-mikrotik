@@ -12,6 +12,9 @@
 {{-   if (has .ipv6 "type") }}
 {{-     $type = .ipv6.type }}
 {{-   end }}
+{{-   if (has .ipv6 "gateway") }}
+{{-     $gateway = .ipv6.gateway }}
+{{-   end }}
 {{- end }}
 
 {{- if (and (eq .name "management")
@@ -19,9 +22,6 @@
                  (has (ds "host").bridge.ipv6 "address"))) }}
 {{-   $address = (index ((ds "host").bridge.ipv6.address | strings.Split "/") 0) }}
 {{-   $prefix = (index ((ds "host").bridge.ipv6.address | strings.Split "/") 1) }}
-{{-   if (has (ds "host").bridge.ipv6 "gateway") }}
-{{-     $gateway = (ds "host").bridge.ipv6.gateway }}
-{{-   end }}
 {{- end }}
 
 {{- if (ne $address "") }}
