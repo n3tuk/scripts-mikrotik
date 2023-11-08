@@ -55,6 +55,8 @@ remove [
 {{  template "item" "Get the Certificate Authorities File" }}
 
 /ip dns
+# Disable verifying DoH certificates to ensure that we can process the DNS
+# requests to fetch the Certificate Authorities which will validate DoH
 set verify-doh-cert=no
 
 /tool fetch \
