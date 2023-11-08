@@ -4,9 +4,9 @@
 {{- $defaults := coll.Dict "group" "read" "address" ((coll.Slice (ds "network").ranges.internal (ds "network").ranges.ssh) | coll.Flatten) "comment" "" "enabled" true }}
 
 {{- $known := coll.Slice }}
-{{- range $u, $v := (ds "network").users }}
-{{-   $v = merge $v $defaults }}
-{{-   if $v.enabled }}
+{{- range $u := (ds "network").users }}
+{{-   $u = merge $u $defaults }}
+{{-   if $u.enabled }}
 {{-     $known = $known | append $u }}
 {{-   end }}
 {{- end }}
@@ -24,16 +24,16 @@ set always-allow-password-login=no \
 
 {{  template "component" "Configure the Active Users" }}
 
-{{- range $u, $v := (ds "network").users -}}
-{{-   $v = merge $v $defaults }}
-{{-   if $v.enabled }}
+{{- range $u := (ds "network").users -}}
+{{-   $u = merge $u $defaults }}
+{{-   if $u.enabled }}
 
-{{  template "item" $u }}
+{{  template "item" $u.name }}
 
 /user
 
 :if ( \
-  [ :len [ find where name={{ $u }} ] ] = 0 \
+  [ :len [ find where name={{ $u.name }} ] ] = 0 \
 ) do={
   # A password is required, but to prevent passwords in clear-text and enhance
   # security, all users will be set with a random password and must be reset by
@@ -42,24 +42,24 @@ set always-allow-password-login=no \
     :rndstr length=32 \
             from=0123456789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ
   ]
-  add name={{ $u }} \
-      group={{ $v.group }} \
+  add name={{ $u.name }} \
+      group={{ $u.group }} \
       password="$password" \
-      address="{{ join $v.address "," }}"
+      address="{{ join $u.address "," }}"
 }
 
-set [ find where name={{ $u }} ] \
-    group={{ $v.group }} \
-    address="{{ join $v.address "," }}" \
-    disabled={{ if $v.enabled }}no{{ else }}yes{{ end }} \
-    comment="{{ $v.comment }}"
+set [ find where name={{ $u.name }} ] \
+    group={{ $u.group }} \
+    address="{{ join $u.address "," }}" \
+    disabled={{ if $u.enabled }}no{{ else }}yes{{ end }} \
+    comment="{{ $u.comment }}"
 
 /user ssh-keys
-{{-      if (has $v "keys") -}}
-{{         range $k := $v.keys }}
+{{-      if (has $u "keys") -}}
+{{         range $k := $u.keys }}
 
 :if ( \
-  [ :len [ find where user={{ $u }} and key-owner={{ $k.name }} ] ] = 0 \
+  [ :len [ find where user={{ $u.name }} and key-owner={{ $k.name }} ] ] = 0 \
 ) do={
   /file
   :if ( \
@@ -70,16 +70,16 @@ set [ find where name={{ $u }} ] \
   # This is needed to ensure the file is ready for reading by the import
   :delay 300ms
   /user ssh-keys
-  import user={{ $u }} \
+  import user={{ $u.name }} \
          public-key-file={{ $k.name }}.pub
 }
 {{-        end -}}
 {{-     end }}
 
 remove [
-  find where user={{ $u }}
-{{-     if (has $v "keys") -}}
-{{-       range $k := $v.keys }} \
+  find where user={{ $u.name }}
+{{-     if (has $u "keys") -}}
+{{-       range $k := $u.keys }} \
          and key-owner!={{ $k.name }}
 {{-       end }}
 {{-     end }}
