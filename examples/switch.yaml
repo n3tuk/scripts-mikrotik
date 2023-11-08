@@ -32,11 +32,9 @@ bridge:
   vlans:
     - management
   ipv4:
-    address: 172.16.0.2/24
-    gateway: 172.16.0.1
+    address: 172.16.10.2/24
   ipv6:
-    address: 2f00:8086:8086:0::/64
-    gateway: fe80::7a7a:10ff:fe69:ee30%bri01.10
+    address: 2001:0db8:8086:10::/64
   comment: Management Network
 
 interfaces:
@@ -114,6 +112,12 @@ interfaces:
 
   - name: gbe24
     original: ether24
+    enabled: true
+    vlans:
+      - management
+      - private
+      - guest
+    comment: ap1 (trunk)
 
   - name: xfp01
     original: sfp-plus1

@@ -1,13 +1,13 @@
 ---
-# This is an example configuration for a router-based MikroTik host, showing
-# the possible configuration options which can be set and passed into the
-# templates for exporting into the different types. See examples/switch.yaml for
-# an example of a switch-based host, as well as examples/network.yaml for an
-# example configuration of the network.
+# This is an example configuration for a routing MikroTik host, showing the
+# possible configuration options which can be set and passed into the templates
+# for exporting into the different types. See examples/switch.yaml for an
+# example of a switch-based host, as well as examples/network.yaml for an
+# example configuration of the network itself.
 
 # Define the name of this Mikrotik host which will be used to set the identity
 # during initialisation. This can be any string you want; it's not used to set
-# any DNS or any other configuration.
+# any DNS, just provide the name on the console or via WebFig/WinBox.
 name: router
 
 # Define the name of the network you want to configure this host against,
@@ -16,33 +16,46 @@ name: router
 network: network
 
 # Define the type of the device being configured, which should be one of router,
-# switch, or ap (access point), so parts of the configurations and be
-# specifically updated to the purpose of this host.
+# switch, or ap (access point), so parts of the configurations can be
+# specifically tailored to the purpose of this host.
 type: router
 
-# Where vault is used in the source value above, add the following configuration
-# to configure the hostname of the server to connect to and the path where the
-# overrides are kept. Authentication is not handled by this tool; a VAULT_TOKEN
-# or other environment configuration is expected to permit the required access.
+# Where Hashicorp Vault is used to store secret information, add the following
+# configuration to set the hostname of the server to connect to and the path
+# where the secrets are kept. Authentication is not handled by this tool; a
+# VAULT_TOKEN or other environment configuration is expected to permit the
+# required access when the scripts are run.
 # vault:
 #   host: vault.example.com
 #   path: mikrotik/host/router
 
-# Set model and description to any value you like, as these are just metadata
-# values which are included in the header of any exported script to provide
-# information about the host the script is being created for.
+# Set model and description of this Mikrotik host to any value you like, as
+# these are just metadata values which are included in the header of any
+# exported script to provide information about the host the export is for.
 model: RB4011iGS+RM
 description: |-
   The core router of the network providing routing and firewall facilities
 
 settings:
+  # Many Mikrotik devices support Jumbo Frames, so the mtu and l2mtu values can
+  # be set here under settings to define the default MTU values for each
+  # physical ethernet interface on this device. These can be overridden on a
+  # per-interface too (see below for an example).
   mtu: 2000
   l2mtu: 2092
 
+  # Each host will have SSH enabled for remote access, including uploading these
+  # exported scripts to run. By setting the key here under SSH, the SSH host
+  # private key can be defined so that the host can provide a consistent public
+  # key to verify the host when connecting between updated or re-initialisations.
   ssh:
-    # openssl genpkey -algorithm ed25519
     key: |
       -- PRIVATE KEY --
+
+  # Each host can have WebFig and the API made available over HTTPS for remote
+  # monitoring and management. If the key and certificate are set, like below,
+  # under ssl, then the appropriate certificates can be installed onto the host
+  # and then configured against the two services, and therefore enabling access.
   ssl:
     key: |
       -- PRIVATE KEY --
@@ -52,15 +65,15 @@ settings:
   # Set the timezone for this server to properly configure the local time and
   # any checks for summer/winter times. This is based on the standard tz
   # database, more of which be found in the Wiki:
-  #   https://wiki.mikrotik.com/wiki/Manual:System/Time
+  #   https://help.mikrotik.com/docs/display/ROS/Clock
   timezone: Europe/London
 
-  # Configure a list of external NTP Servers as an override for those from the
+  # Configure a list of external NTP Servers as an override on those from the
   # (network.yaml).settings.ntp_servers configuration. This is useful to provide
   # the external servers on a router which can synchronise with public NTP
-  # servers, and then provide those into the network, with the router configured
-  # under network settings. Don't forget to add these to the fw-ntp-trusted
-  # Address List via the (network.yaml).lists.address.ntp.trusted setting.
+  # servers, and then provide this function back into the network, with the
+  # router configured under network settings. Don't forget to add these to the
+  # ntp:trusted Address List via the (network.yaml).lists setting.
   ntp_servers:
     - address: 0.uk.pool.ntp.org
       comment: NTP Pool Project for United Kingdom
@@ -71,54 +84,90 @@ settings:
     - address: 3.uk.pool.ntp.org
       comment: NTP Pool Project for United Kingdom
 
-# The network is only configured with a single bridge interface for all hosts
+# The network is only configured with a single bridge interface on each host
 # to which all physical are attached, and then all of these are variously
 # associated with VLANs in tagged and untagged configurations. This block
 # configures that bridge.
 bridge:
   name: bri01
+  # The original setting is the name of the bridge as initialised and will be
+  # renamed to name through the netinstall script when the device is reset
   original: bridge
+  # The priority value is the priority setting for MSTP which is used by all
+  # hosts to decide who is most likely to be the root bridge host
   priority: 0x3000
-  # The default VLAN PID that this interface should be associated with; by
-  # default this is management and shouldn't normally be changed.
+  # The VLANs that this interface should be associated with; by default this is
+  # just management and shouldn't normally be changed, except on routers, where
+  # this should list all VLANs for which this host will route the traffic
   vlans:
     - management
-  # Define the IPv4 and IPv6 (optional) address for this host on the
-  # Management VLAN. IPv6 can support a /64 address as EUI64 will be enabled. If
-  # not provided, no IPv6 address will be assigned.
+    - private
+    - guest
+    - dmz
+  # Define the IPv4 and IPv6 (optional) address for this host on the Management
+  # VLAN. IPv6 should normally be a /64 address, with EUI64 enabled. If only a
+  # subnet is provided, the host address will be added, otherwise if a full IPv6
+  # address is provided, that will be used as-is.
+  #
+  # For both IPv6 and IPv4, where this address matches the IPv4 and IPv6 address
+  # for the management vlan in (networks.yaml).vlans, then this host will be
+  # configured as the router for the management VLAN and DHCP/Static/SLAAC
+  # settings configured, as set.
   ipv4:
-    address: 172.16.0.1/24
+    address: 172.16.10.1/24
   ipv6:
-    address: 2f00:8086:8086:0::/64
-    gateway: fe80::7a9a:18ff:fe49:b230%bri01.10
+    address: 2001:0db8:8086:10::1/64
+  # The comment to be provided for this bridge and any resources directly
+  # associated with this bridge
   comment: Management Network
 
 interfaces:
-  # All interfaces can be named as required, where name matched the name of the
-  # interface on the host to apply the configuration two, and if original is
+  # All interfaces can be named as required, where name matches the name of the
+  # interface on the host to apply the configuration too, and if original is
   # set, then the interface will be renamed from original to name during
   # initialisation of the host via the netinstall script.
   - name: wan01
     original: ether1
+    # The type can define which type of physical interface this is. By default
+    # the type is ethernet and only needs to be defined where it is different
+    # (i.e. setting to wireless for wireless interfaces).
+    type: ethernet
+    # Every interface is disabled by default and must be explicit enabled before
+    # it can be used, ensuing that they cannot be accidentally active.
     enabled: true
+    # If the bridge setting it disabled, then this interface will not be
+    # attached to the bridge device on each host.
     bridge: false
+    # Like mtu and l2mtu above, they can be set on each interfaces to override
+    # the defaults for all interfaces on this host.
     mtu: 1500
     l2mtu: 1592
+    # The comment to be provided for this physical interface and any resources
+    # associated with this interface (such as the bridge port configuration).
     comment: Zen Internet (FTTP)
 
   - name: mgt01
     original: ether2
     enabled: true
+    # The vlan configuration can define the VLAN which should be associated with
+    # untagged traffic being received on this interface, or should be stripped
+    # from traffic being sent by this interface. If no other vlans configuration
+    # is found, this interface will also be configured as an edge interface on
+    # the bridge.
+    vlan: management
     # Define the cost of this port on this bridge interface, which will be
-    # factored in as part of the calculation to the root bridge. The value
-    # should be 20Tbps/(interface speed), so:
-    #     1Gbps: 20000 | 10Gbps:  2000 | 100Gbps:   200 | 1Tbps:    20 |
+    # factored in as part of the calculation to the root bridge under MSTP. The
+    # value should be 20Tbps divided by the (interface speed), so:
+    #     1Gbps: 20000 | 10Gbps:  2000 | 100Gbps:   200 | 1[bps:    20 |
     #   2.5Gbps:  8000 | 25Gbps:   800 |                |
     #                  | 40Gbps:   500 | 400Gbps:    50 |
     #     5Gbps:  4000 |
     cost: 20000 # Gigabit Ethernet
-    comment: Management Interface
+    comment: Management Port
 
+  # With just name and original set, this interface will be renamed and
+  # configured with the default MTU, and then disabled and associated with the
+  # blocked VLAN, preventing this interface port from being used.
   - name: gbe01
     original: ether3
 
@@ -138,10 +187,17 @@ interfaces:
     original: ether8
 
   - name: xfp01
-    enabled: true
     original: sfp-plus1
+    enabled: true
+    # The vlans configuration can define the VLANs which should be associated
+    # with tagged traffic being sent and received on this interface. If no vlan
+    # configuration is found, this interface will also be configured as an
+    # non-edge interface on the bridge, assuming that some other bridge device
+    # is configured on the other end.
     vlans:
       - management
       - private
       - guest
-    cost: 2000 # 10GbE
+    # This is a 10GbE port, so reduce the cost, as per the above table
+    cost: 2000
+    comment: switch1 (trunk)

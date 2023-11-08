@@ -1,20 +1,51 @@
 ---
+# This is an external of the general configuration for a network, defining
+# common settings which should apply to all hosts as standard. This includes
+# settings such as the VLANs which are available on a network, DNS configuration
+# for the Mikrotik hosts, as well as the firewall settings.
+
 settings:
+  # Configure a list of external NTP Servers as an override on those from the
+  # (network.yaml).settings.ntp_servers configuration. This is useful to provide
+  # the external servers on a router which can synchronise with public NTP
+  # servers, and then provide this function back into the network, with the
+  # router configured under network settings. Don't forget to add these to the
+  # ntp:trusted Address List via the (network.yaml).lists setting.
   ntp_servers:
     - address: 172.16.1.1
       comment: Network NTP Server (router)
+
+  # All wireless interfaces should be configured for their regional domain,
+  # which defines usable frequencies and power levels, so allow this to be set
+  # here as a common value across the network.
   wifi:
     country: united kingdom
 
 ranges:
+  # Define the internal ranges for the network, which will be used to lock down
+  # all host-based services (SSH, WinBox, WebFig, Graphs, and WinBox) across the
+  # network.
+  #
+  # Note: This is not the same as the internal Address List (below), but they
+  #       should generally be set to the same values. These values take
+  #       precedence over the internal Address List.
   internal:
     - 172.16.0.0/16
     - 2a00:8086:8086::/48
+  # These are additional entries to the above internal list which allow for external
+  # access to the SSH service only, for controlled remote management access in
+  # the event the internal VPN is not working and maintenance is required.
+  #
+  # Note: This is not the same as the ssh:allowed Address List (below). These
+  #       values take precedence over ssh:allowed and ssh:trusted Address Lists.
   ssh:
     - 46.235.225.59
     - 2a00:1098:82:e8::/64
 
 dns:
+  # Set the URI for the DoH (DNS over HTTPS) client on all hosts in the network,
+  # as well as set the static address entries to map the hostname provided (to
+  # match the HTTPS certificate) to the IP addresses of the service.
   resolver:
     doh: https://one.one.one.one/dns-query
   static:
@@ -31,26 +62,117 @@ dns:
         - address: 2606:4700:4700::1001
           type: AAAA
 
+# The MSTP configuration allows the region and revision of the network to be
+# set, allowing the associated instances to be grouped and managed.
 mstp:
   region: core
   revision: 1
 
+# Under vlans is each of the VLANs which should be configured across the
+# network, with every device having knowledge of every VLAN, even if it doesn't
+# receive or pass-through traffic for it. Each VLAN configuration should have
+# all the information to configure each of the hosts, as well as the associated
+# firewall rules to be configured on any routers in the network.
 vlans:
+  # The management VLAN is defined here and should always be present to ensure
+  # that the network for all Mikrotik hosts can be correctly configured.
   - id: 10
+    # By default all VLANs created are enabled; set to false to disable
     enabled: true
+    # The name of the VLAN to be deployed, and is the name given in the vlan and
+    # vlans configurations for bridges and interfaces to associate those with
+    # this VLAN, as needed.
     name: management
     comment: Management Network
+
+    # The ipv4 and ipv6 blocks provides the IPv4 and IPv6 configurations,
+    # respectively, for this VLAN. Neither are required, although at least one
+    # should be configured to ensure that the host can be accessed.
     ipv4:
-      address: 172.16.0.1/24
-      pool: 172.16.0.250-172.16.0.254
+      # The address defines the address of the router on this VLAN, although
+      # for management VLAN this address defines which host will be the router
+      # when it matches the IPv4 address of the bridge.
+      address: 172.16.10.1/24
+      # Only supported on the management VLAN, this allows the configuration of
+      # the static route alongside the static IP address. By default the address
+      # above is the route, but if this should be changed to something else,
+      # override it here. This also only applies where the host does not match
+      # the address above (i.e. not the router).
+      gateway: 172.16.10.1
+      # The type defines the type of network this should be, and can be one of
+      # two options:
+      #   - dhcp: The router (i.e. that which matches address above) will be
+      #           configured with an IPv4 pool (set below) and a DHCP Server to
+      #           serve IP addresses from that pool with a lease (set below).
+      #   - static: The router will be configured with an IPv4 address only, and
+      #             all other hosts will be expected to configured with static
+      #             IP addresses and static routes, as needed.
+      type: dhcp
+      pool: 172.16.10.250-172.16.10.254
       lease: 8h
     ipv6:
-      address: 2001:0db8:8086:0::/64
+      # The address defines the address of the router on this VLAN, although,
+      # like above, for management VLAN this address defines which host will be
+      # the router when it matches the IPv6 address of the bridge.
+      address: 2001:0db8:8086:10::1/64
+      # Only supported on the management VLAN, this allows the configuration of
+      # the static route alongside the static IP address. Although the host will
+      # be configured to allow Router Advertisements as forwarding will be
+      # disabled on non-routing hosts, this does not always work. As such
+      # gateway can be configured as a static route for IPv6 (note that this
+      # should be the link-local - fe80::/64 - address of the router, not the
+      # address above).
+      gateway: fe80::7a7a:10ff:fe69:ee30
+      # The type defines the type of network this should be, and can be one of
+      # two options:
+      #   - dhcp: The router (i.e. that which matches address above) will be
+      #           configured with an IPv6 pool (set below) and a DHCPv6 Server
+      #           to serve IP prefixes from that pool with a lease (set below).
+      #   - static: The router will be configured with an IPv6 address, and all
+      #             other hosts will be expected to configured with their own
+      #             static IPv6 addresses (privacy extensions can be enabled
+      #             too). However, Neighbour Discovery will be enabled as well
+      #             with Router Advertisements and DNS configuration broadcast
+      #             to allow hosts to discover these automatically.
+      #   - slaac: The router will be configured with an IPv6 address which is
+      #            advertised back to the network as the allowed prefix,
+      #            alongside the Neighbour Discovery protocol with Router
+      #            Advertisements and DNS configuration. As such, all hosts on
+      #            this VLAN will be able to self-configure their IPv6 address.
+      type: dhcp
+      pool: 2001:0db8:8086:10::/60
       lease: 8h
+
+    # Each VLAN can be configured with their own firewall rules which applies
+    # explicitly to traffic received from the IP addresses associated with this
+    # VLAN (not the physical interface). For IPv6 addresses, this will include
+    # the prefixes in the pool where that pool is not the same as the
+    # network/prefix of the network address.
+    #
+    # Firewall rules operate in the following order:
+    #   - Port Forwarding Rules (i.e. services which should be publicly
+    #     accessible by all hosts);
+    #   - Common Services (i.e. all internal services which should be accessible
+    #     only by all hosts within the network);
+    #   - Common Rules (i.e. rules which should apply to more than one VLAN at a
+    #     time); and
+    #   - per-VLAN rules, as below.
     firewall:
       rules:
+        # Each rule should have at least a comment and an action, although the
+        # comment is really optional (but highly recommended to help understand
+        # its purpose within the chain).
         - comment: Allow access to the Internet (HTTPS)
+          # dst-address-list can be used to control which addresses this traffic
+          # rule should be applied to, with this case meaning any traffic which
+          # should leave this network. The value of "!vlans" can also be used to
+          # mean any traffic leaving the local VLANs of this network too.
+          #
+          # The src-address-list can be used too to further focus which hosts
+          # this rule applies to, if needed (see rules below for examples).
           dst-address-list: "!internal"
+          # protocl, src-port, and dst-port, can be defined to match the
+          # relevant traffic to be processed by the action.
           protocol: tcp
           dst-port: 80,443
           action: accept
@@ -60,6 +182,8 @@ vlans:
           dst-port: 443
           action: accept
 
+  # Like the management VLAN above, the blocked VLAN is required and defines the
+  # VLAN ID for any physical interfaces which should not be handling traffic.
   - id: 99
     name: blocked
     comment: Blocked Network Interfaces
@@ -68,12 +192,16 @@ vlans:
     name: private
     comment: General Private Network
     ipv4:
-      address: 172.16.1.1/24
-      pool: 172.16.1.200-172.16.1.250
+      address: 172.16.20.1/24
+      pool: 172.16.20.200-172.16.20.250
       lease: 8h
     ipv6:
-      address: 2001:0db8:8086:1::/64
-      lease: 8h
+      address: 2001:0db8:8086:20::/64
+      type: slaac
+    # Where a VLAN is expected to be connected to a wireless interface (either
+    # physically or virtually), the wifi block should be provided to set the
+    # public name of that network, broadcast as its SSID, and the pre-shared-key
+    # (psk) which will be the WPA2 password (WPA1 will be disabled).
     wifi:
       ssid: Home WiFi
       psk: this-is-the-psk-for-home-wifi
@@ -86,12 +214,12 @@ vlans:
     name: guest
     comment: Private, Limited-Access Network for Guests
     ipv4:
-      address: 172.16.2.1/26
-      pool: 172.16.2.2-172.16.2.254
+      address: 172.16.21.1/26
+      pool: 172.16.21.2-172.16.21.254
       lease: 15m
     ipv6:
-      address: 2001:0db8:8086:2::/64
-      lease: 15m
+      address: 2001:0db8:8086:21::/64
+      type: slaac
     wifi:
       ssid: Private WiFi
       psk: this-is-the-psk-for-private-wifi
@@ -101,67 +229,462 @@ vlans:
           dst-address-list: "!internal"
           action: accept
 
+  - id: 30
+    name: dmz
+    comment: DMZ network for Servers
+    ipv4:
+      address: 172.16.30.1/24
+      pool: 172.16.30.2-172.16.30.254
+      lease: 24h
+    ipv6:
+      address: 2001:0db8:8086:30::/64
+      type: slaac
+    firewall:
+      rules:
+        - comment: Allow HTTP(S) to the Internet
+          dst-address-list: "!internal"
+          protocol: tcp
+          port: 80.443
+          action: accept
+        - comment: Allow HTTPS/2 to the Internet
+          dst-address-list: "!internal"
+          protocol: udp
+          port: 443
+          action: accept
+        - comment: Allow Cloudflare Tunnel access from Jenkins Server via UDP
+          # Update this rule to use src-address-list and a custom Address List
+          # (created below) which ensures that only "jenkins" hosts are allowed
+          # Internet access on 7844/tcp or 7844/udp
+          src-address-list: "jenkins"
+          dst-address-list: "!internal"
+          protocol: udp
+          port: 7844
+          action: accept
+        - comment: Allow Cloudflare Tunnel access from Jenkins Server via TCP
+          src-address-list: "jenkins"
+          dst-address-list: "!internal"
+          protocol: tcp
+          port: 7844
+          action: accept
+
+# Address lists and interface lists allow for the simplification of firewall
+# rules and some access controls, and this block allows them to be defined
+# (although only address lists are supported currently). The only "required"
+# Address List is "internal" as this is used to control which traffic should be
+# treated as external and therefore go through additional checks.
+lists:
+  # This is the only "required" address list, although if it is not defined then
+  # routers will treat all inbound traffic as "external" (which blocks some
+  # DHCP, DNS, and NTP functions).
+  - name: internal
+    # The type should always be address for address lists. No other type is
+    # currently supported at this time.
+    type: address
+    # If default is enabled, then this address list will be configured on a
+    # device when being initialised using the netinstall script. This is only
+    # required for internal, dns:trusted, and https:trusted address lists as
+    # these are used for core basic functions on the host.
+    default: true
+    addresses:
+      # Each address can be one or more of ipv4, ipv6, host, and a comment.
+      # Where host is provided, both ipv4 and ipv6 will be overridden and only
+      # the hostname will be added to the list (unless specified in another
+      # entry). The comment will be applied to all entries added to the list
+      # from each entry in the list.
+      - ipv4: 172.16.0.0/16
+        ipv6: 2001:0db8:8086::/48
+        comment: Internal Networks
+
+  # The dns:trusted address list should be a default list and populated with any
+  # hosts which should be trusted to resolve DNS requested, either via the
+  # standard port 53/udp and 53/tcp, or DNS over TLS and DNS over HTTPS. This
+  # applies for both outgoing traffic, and forwarded traffic via routers.
+  - name: dns:trusted
+    type: address
+    default: true
+    addresses:
+      - ipv4: 172.27.10.1
+        ipv6: 2001:0db8:8086:10::1
+        # By default all entries for an address list are enabled and will be
+        # added, but, if required, they can be disabled and will be added to the
+        # list in disabled mode.
+        enabled: true
+        comment: router
+      - ipv4: 1.1.1.1
+        ipv6: 2606:4700:4700::1111
+        comment: one.one.one.one
+      - ipv4: 1.0.0.1
+        ipv6: 2606:4700:4700::1001
+        comment: one.one.one.one
+
+  # The https:trusted address list is a default list which allows each Mikrotik
+  # host access to selected services (curl.se to fetch Certificate Authorities,
+  # and download.mikrotik.com to check for, and fetch, updates).
+  - name: https:trusted
+    type: address
+    default: true
+    addresses:
+      - host: curl.se
+        comment: curl CA Certificate Endpoint
+      - host: download.mikrotik.com
+        comment: MikroTik Download Server for Packages
+
+  # The ntp:trusted address list is a list which allows access to trusted NTP
+  # servers over 123/udp only. This applies for both outgoing traffic, and
+  # forwarded traffic via routers.
+  - name: ntp:trusted
+    type: address
+    addresses:
+      - host: 0.uk.pool.ntp.org
+      - host: 1.uk.pool.ntp.org
+      - host: 2.uk.pool.ntp.org
+      - host: 3.uk.pool.ntp.org
+      - ipv4: 172.27.10.1
+        ipv6: 2a02:8010:8086:10::1
+        comment: router
+
+  # The admin:trusted address list provides the addresses which can access to
+  # SSH and WinBox. There is no default here, including for the management
+  # network, so if left blank all access will be denied. This is alongside the
+  # ranges configuration above, meaning that:
+  #   - the admin:trusted list must be satisfied to allow traffic into the port;
+  #   - ranges.internal (or ranges.ssh) must be satisfied for the service to
+  #     process the request; and
+  #   - the users addresses must be satisfied to allow them to authenticate.
+  - name: admin:trusted
+    type: address
+    addresses:
+      - ipv4: 172.16.10.0/24
+        ipv6: 2001:0db8:8086:10::/60
+        comment: Management Network
+      - ipv4: 172.16.20.0/24
+        ipv6: 2001:0db8:8086:20::/64
+        comment: Private Network
+
+  # The tarpit:trusted address list provides a list of addresses which should
+  # not be processed by the tarpit chains. Requested to closed ports will just
+  # be rejected or dropped, and no further processing happens. All other address
+  # may be added to the dynamic:tarpit:restricted list, as needed, which blocks
+  # all access (even to open ports) for up to six months.
+  - name: tarpit:trusted
+    type: address
+    addresses:
+      - ipv4: 198.51.100.104
+        ipv6: 2001:0db8:1234::b72c
+        comment: Private VPS
+
+  # The icmp:trusted and icmp:unrestricted address lists control how ICMP echo
+  # requests and replies can be handled, with those in the icmp:trusted list
+  # allowed unlimited rates and packets. Any address in icmp:unrestricted will
+  # be processed and rate-limited, but they will not be added to the list
+  # dynamic:icmp:restricted which blocks all ICMP echo requests for up to six
+  # months.
+  - name: icmp:trusted
+    type: address
+    addresses:
+      - ipv4: 172.16.20.0/24
+        ipv6: 2001:0db8:8086:1::/64
+        comment: Private Network
+      - ipv4: 198.51.100.104
+        ipv6: 2001:0db8:1234::b72c
+        comment: Private VPS
+  - name: icmp:allowed
+    type: address
+    addresses:
+      - ipv4: 172.16.0.0/16
+        ipv6: 2001:0db8:8086::/48
+        comment: Internal Networks
+  - name: icmp:unrestricted
+    type: address
+    addresses:
+      - ipv4: 172.16.10.0/24
+        ipv6: 2001:0db8:8086:10::/60
+        comment: Management Network
+      - ipv4: 172.16.30.0/24
+        ipv6: 2001:0db8:8086:30::/48
+        comment: DMZ Network
+
+  # The ssh:trusted, ssh:allowed, and ssh:unrestricted address lists control how
+  # SSH can be accessed on this host. Those in ssh:trusted will be allowed
+  # unlimited access to the SSH service (in either direction) and will not be
+  # blocked.
+  #
+  # The ssh:allowed list defines which addresses can access the SSH port and
+  # request to log into the host, but if the host exceeds the allowed rate of
+  # new connections, then it will be added to the dynamic:ssh:restricted list
+  # and blocked from connecting for up to six months. If the address is in the
+  # ssh:unrestricted, it will only be blocked though the rate limit and not
+  # added to the restricted list.
+  - name: ssh:trusted
+    type: address
+    addresses:
+      - ipv4: 172.16.20.0/24
+        ipv6: 2001:0db8:8086:1::/64
+        comment: Private Network
+      - ipv4: 198.51.100.104
+        ipv6: 2001:0db8:1234::b72c
+        comment: Private VPS
+      - ipv4: 203.0.113.0/24
+        ipv6: 2001:0db8:2033::1
+        comment: Work External IP
+  - name: ssh:allowed
+    type: address
+    addresses:
+      - ipv4: 172.16.0.0/16
+        ipv6: 2001:0db8:8086::/48
+        comment: Internal Networks
+  - name: ssh:unrestricted
+    type: address
+    addresses:
+      - ipv4: 172.16.20.0/24
+        ipv6: 2001:0db8:8086:20::/64
+        comment: Private Network
+
+  # The wireguard:trusted list is a list of addresses which is allowed to
+  # connect to the WireGuard service on this host. Will normally be external
+  # addresses only.
+  - name: wireguard:trusted
+    type: address
+    addresses:
+      - ipv4: 198.51.100.104
+        ipv6: 2001:0db8:1234::b72c
+        comment: Private VPS
+
+  # The bogons:allow list is a list of addresses which override the BOGONs
+  # network lists and should be allowed from internal sources (i.e. this should
+  # be the range of internal Private IP addresses used in IPv4 networks).
+  #
+  # Note: BOGON processing is currently disabled.
+  - name: bogons:allow
+    type: address
+    addresses:
+      - ipv4: 172.16.0.0/16
+        comment: Internal Networks
+
+  # The bogons:casting list is a list of addresses which override the BOGONs
+  # network lists and should be allowed access to, but only from internal
+  # sources, (i.e. this should be the range of multicast or broadcast addresses
+  # used), to help the network operate.
+  #
+  # Note: BOGON processing is currently disabled.
+  - name: bogons:casting
+    type: address
+    addresses:
+      - ipv4: 224.0.0.0/4
+        comment: RFC 5771 (Multicast Addresses)
+      - ipv4: 255.255.255.255
+        comment: Global Broadcast
+      - ipv6: ff0e::/16
+        comment: RFC 4291 (Multicast, Global Scope)
+        # This really needs to be on the external interfaces to work and this is
+        # neither used nor supported yet in this configuration
+        enabled: false
+
+  # The bogons:block list is the list of all networks which should be blocked
+  # from being received on the internet or set to the internet, both as
+  # sources and destinations.
+  #
+  # Note: BOGON processing is currently disabled.
+  - name: bogons:block
+    type: address
+    addresses:
+      - ipv4: 0.0.0.0/8
+        comment: RFC 1122 (This host on this network)
+      - ipv4: 10.0.0.0/8
+        comment: RFC 1918 (Private-Use Address Space)
+      - ipv4: 100.64.0.0/10
+        comment: RFC 6598 (Shared Address Space - CGNAT)
+      - ipv4: 127.0.0.0/8
+        comment: RFC 1122 (Loopback)
+      - ipv4: 169.254.0.0/16
+        comment: RFC 3927 (Dynamic Configuration of IPv4 Link-Local Addresses)
+      - ipv4: 172.16.0.0/12
+        comment: RFC 1918 (Private-Use Address Space; Part 1)
+      - ipv4: 192.0.0.0/24
+        comment: RFC 6890 (IETF Protocol Assignments)
+      - ipv4: 192.0.2.0/24
+        comment: RFC 5737 (TEST-NET-1)
+      - ipv4: 192.31.196.0/24
+        comment: RFC 7535 (AS112-v4)
+      - ipv4: 192.52.193.0/24
+        comment: RFC 7450 (AMT)
+      - ipv4: 192.88.99.0/24
+        comment: RFC 7526 (Deprecated - 6to4 Relay Anycast)
+      - ipv4: 192.168.0.0/16
+        comment: RFC 1918 (Private-Use Address Space)
+      - ipv4: 192.175.48.0/24
+        comment: RFC 7534 (Direct Delegation AS112 Service)
+      - ipv4: 198.18.0.0/15
+        comment: RFC 2544 (Benchmarking)
+      - ipv4: 198.51.100.0/24
+        comment: RFC 5737 (TEST-NET-2)
+      - ipv4: 203.0.113.0/24
+        comment: RFC 5737 (TEST-NET-3)
+      - ipv4: 224.0.0.0/4
+        comment: RFC 5771 (Multicast Addresses)
+      - ipv4: 240.0.0.0/4
+        comment: RFC 1112 (Reserved)
+      - ipv4: 255.255.255.255
+        comment: RFC 919 (Limited Broadcast)
+
+      - ipv6: ::/128
+        comment: RFC 4291 (Node-scope unicast unspecified address)
+      - ipv6: ::1/128
+        comment: RFC 4291 (Node-scope unicast loopback address)
+      - ipv6: ::ffff:0:0/96
+        comment: IPv4-mapped addresses
+      - ipv6: ::/96
+        comment: RFC 4291 (IPv4-compatible addresses)
+      - ipv6: 100::/64
+        comment: Remotely triggered black hole addresses
+      - ipv6: 2001:2::/48
+        comment: RFC 5180 (Benchmarking)
+      - ipv6: 2001:10::/28
+        comment: RFC 4843 (Overlay routable cryptographic hash identifiers, ORCHID)
+      - ipv6: 2001:db8::/32
+        comment: RFC 3849 (Documentation prefix)
+      - ipv6: fc00::/7
+        comment: RFC 4193 (Unique local addresses, ULA)
+      - ipv6: fe80::/10
+        comment: RFC 4291 (Link-local unicast)
+        enabled: false
+      - ipv6: fec0::/10
+        comment: RFC 3879 (Site-local unicast - Deprecated)
+      - ipv6: ff00::/8
+        comment: RFC 4291 (Multicast)
+
+  # The following are custom address lists which are used in firewall rules and
+  # controls above, and below, and are not required by the default firewall
+  # rules sets.
+
+  - name: vps
+    type: address
+    addresses:
+      - ipv4: 198.51.100.104
+        ipv6: 2001:0db8:1234::b72c
+        comment: Private VPS
+
+  - name: plex:clients
+    type: address
+    addresses:
+      - ipv4: 172.16.20.0/24
+        ipv6: 2001:0db8:8086:20::/64
+        comment: Private Network
+      - ipv4: 172.16.21.0/24
+        ipv6: 2001:0db8:8086:21::/64
+        comment: Guest Network
+
+  - name: plex:servers
+    type: address
+    addresses:
+      - ipv4: 172.16.30.2
+        ipv6: 2001:0db8:8086:30:d01a:bf1f:3a5b:5bc6
+        comment: Plex Server
+
 firewall:
   forwarding:
+    # There are four components to the network firewall, of which the first, and
+    # the highest priority effectively, is the port forwarding configuration,
+    # and defines all the internal services which should be available
+    # externally.
+    #
+    # For IPv4 traffic this means setting up a dstnat rule to NAT the request
+    # and response, plus a forwarding rule to permit all traffic (including
+    # internal networks) to access it. A srcnat rule may be added if the
+    # src-address-list is configured to add support for hairpin NAT.
+    #
+    # For IPv6, this allows the traffic through as NAT is not required.
     ports:
-      - comment: Remote Access to Web Server
-        protocol: tcp
-        port: 8080
+      - comment: Remote Access to Web Server via HTTP
         # This is the external IP address which traffic should be directed to,
         # so that it can be processed and redirected to the ipv4 address below
-        dst-address: 198.51.100.22
+        dst-address: 192.0.2.22
         # If hairpin NAT is required for this port, define the VLAN address list
         # which should be matched for masquerading the internal traffic
-        src-address-list: vlan:guests
+        src-address-list: vlan:dmz
+        protocol: tcp
+        port: 8080
         # By setting ipv4, a rule will be created in the nat/dstnat chain which
         # re-writes IPv4 destination address of the packet to the above protocol
         # and port from the named interface, and a corresponding rule in the
         # filter/forward chain will automatically allow dstnat'd packets through
-        ipv4: 172.27.2.254
+        ipv4: 172.27.30.3
         # By setting ipv6, a rule will be created in the filter/forward chain
         # which will allow requests being passed to this address for the above
         # protocol/port to be permitted through from the above interface
-        ipv6: 2001:0db8:8086:2:ed62:f58b:125d:3226
-      - comment: Remote Access to Web Server
+        ipv6: 2001:0db8:8086:30:ed62:f58b:125d:3226
+      - comment: Remote Access to Web Server via HTTPS
         protocol: tcp
         port: 8443
-        dst-address: 198.51.100.22
-        src-address-list: vlan:guests
-        ipv4: 172.27.2.254
-        ipv6: 2001:0db8:8086:2:ed62:f58b:125d:3226
+        dst-address: 192.0.2.22
+        src-address-list: vlan:dmz
+        ipv4: 172.27.30.3
+        ipv6: 2001:0db8:8086:30:ed62:f58b:125d:3226
 
+    # For services which should be available internally only, but from any
+    # VLAN, then they can be added to the services list. The source only needs
+    # to match the internal address list above.
     services:
-      - comment: HTTPS access to Owain for external services
+      - comment: HTTPS access to VPS for external services
+        dst-address-list: vps
         protocol: tcp
         port: 80,443
-        dst-address: 198.51.100.104
-        ipv6: 2001:0db8:1234::b72c
-      - comment: HTTPS access to Owain for internal services
-        protocol: tcp
-        port: 80,443
-        ipv4: 172.27.1.1
+        action: accept
 
-    rules: []
+    # For cases where there are rules which should apply to some, or all, VLANs,
+    # they can be written once using the roles list here, rather than added one
+    # to each firewall list on each applicable VLAN. Also, any traffic being
+    # processed via VPNs can be added here too as this rules list applies to the
+    # internal address list above, and not to each individual VLAN.
+    rules:
+      - comment: Allow all Internal Networks access to Plex
+        src-address-list: plex:clients
+        dst-address-list: plex:servers
+        protocol: tcp
+        port: 32400
+        action: accept
 
 users:
-  admin:
+  # Although explicit set here as disabled, if the admin user is not configured
+  # here, it will be removed, unless no-one configured on the host has full
+  # access, in which case RouterOS will prevent the deletion of the admin user
+  - name: admin
     enabled: false
-  jonathan:
+
+  # Each of the users can be created here and will be deployed onto the host
+  # both during the netinstall script as update or users. The password for a
+  # user cannot be configured here as it can only be provided through plain
+  # text, and therefore is set to a random 32-character alphanumeric string. As
+  # such, at least one user must have SSH keys configured in order to log in
+  # over SSH and set their own local password, as well as temporary passwords
+  # for other users.
+  - name: jonathan
     group: full
     comment: Jonathan Wright <jon@than.io>
     keys:
-      - name: jonathan-laptop
+      - name: laptop
         type: ssh-rsa
+        # Note that the contents of the keys are not checked on updates, only
+        # their presence based on the name of the key, so if the contents must
+        # be changed, the name of the key must be different as well to force
+        # creation of the new key and deletion of the old one.
         contents: >
           AAAAB3NzaC1yc...==
-      - name: jonathan-desktop
+      - name: desktop
         type: ssh-rsa
         contents: >
           AAAAB3NzaC1yc...==
 
+# Where HTTPS certificates are managed using private Certificate Authorities, it
+# may be necessary to add the root and intermediate certificates to a host to
+# help build the chain, or to trust the endpoint being accessed.
 certificates:
+  # Each certificate requires the name to be give to it (and to be checked for
+  # existing), as well as the contents of that certificate.
   - name: private-ca
+    # Note that the contents of the certificates are not checked on updates,
+    # only their presence based on the name of the certificate, so if the
+    # contents must be changed, the name of the certificate must be different as
+    # well to force creation of the new certificate.
     contents: |
-      -----BEGIN CERTIFICATE-----
-      MIIDBjCCAme...AA==
-      -----END CERTIFICATE-----
+      -- CERTIFICATE --

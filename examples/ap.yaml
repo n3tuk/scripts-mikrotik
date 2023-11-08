@@ -9,7 +9,7 @@ host: ap1
 type: ap
 network: network
 
-model: cAP AC
+model: cAP ac
 description: |-
   The Office access point.
 
@@ -31,17 +31,19 @@ bridge:
   vlans:
     - management
   ipv4:
-    address: 172.16.0.100/24
-    gateway: 172.16.0.1
+    address: 172.16.10.100/24
   ipv6:
-    address: 2f00:8086:8086:0::/64
-    gateway: fe80::7a7a:10ff:fe69:ee30%bri01.10
+    address: 2001:0db8:8086:10::/64
   comment: Management Network
 
 interfaces:
   - name: gbe01
     original: ether1
     enabled: true
+    vlans:
+      - management
+      - private
+      - guest
     comment: switch1 (trunk)
 
   - name: gbe02
@@ -50,9 +52,22 @@ interfaces:
   - name: wfi24
     original: wlan1
     enabled: true
+    # For wireless interfaces the type needs to be explicitly set to wireless,
+    # which changes the way the values are managed, including using vlan and
+    # vlans for physical and virtual wireless interfaces and attaching all of
+    # them to the bridge as individual untagged ports.
     type: wireless
+    # Define the frequency for this physical interface, which will also be used
+    # to set the other general settings, such as supported protocols.
     frequency: 2412
+    # The vlan is the name of the VLAN which will be attached to the physical
+    # interface, with the security profiles for supported (networks.yaml).vlans
+    # configured and attached.
     vlan: private
+    # The vlans is the list of VLANs which will be attached to the physical
+    # interface as virtual interfaces, providing separate SSIDs, and is
+    # hard-limited to three (if more than three VLANs are provided, only the
+    # first three will be configured).
     vlans:
       - guest
     comment: 2.4Ghz WiFi Network
