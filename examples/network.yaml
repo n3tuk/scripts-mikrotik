@@ -388,12 +388,6 @@ lists:
       - ipv4: 198.51.100.104
         ipv6: 2001:0db8:1234::b72c
         comment: Private VPS
-  - name: icmp:allowed
-    type: address
-    addresses:
-      - ipv4: 172.16.0.0/16
-        ipv6: 2001:0db8:8086::/48
-        comment: Internal Networks
   - name: icmp:unrestricted
     type: address
     addresses:
