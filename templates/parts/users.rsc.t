@@ -7,7 +7,7 @@
 {{- range $u := (ds "network").users }}
 {{-   $u = merge $u $defaults }}
 {{-   if $u.enabled }}
-{{-     $known = $known | append $u }}
+{{-     $known = $known | append $u.name }}
 {{-   end }}
 {{- end }}
 
