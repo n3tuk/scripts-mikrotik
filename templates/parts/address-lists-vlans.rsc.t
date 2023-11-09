@@ -52,12 +52,30 @@ add list="$runId:vlans" address={{ $network }}/{{ $prefix }} \
     comment="{{ $bridge }}.{{ $v.id }}{{ if (has $v "comment") }}: {{ $v.comment }}{{ end }}"
 add list="$runId:vlan:{{ $v.name }}" address={{ $network }}/{{ $prefix }} \
     comment="{{ $bridge }}.{{ $v.id }}{{ if (has $v "comment") }}: {{ $v.comment }}{{ end }}"
+
 {{-     if (has $v "lists") }}
 {{-       range $i := $v.lists }}
 add list="$runId:vlan:{{ $i }}" address={{ $network }}/{{ $prefix }} \
     comment="{{ $bridge }}.{{ $v.id }}{{ if (has $v "comment") }}: {{ $v.comment }}{{ end }}"
 {{-       end }}
 {{-     end }}
+
+{{-     if (and (has $v.ipv6 "pool")
+                (ne $v.ipv6.pool (print $network "/" $prefix))) }}
+
+add list="$runId:vlans" address={{ $v.ipv6.pool }} \
+    comment="{{ $bridge }}.{{ $v.id }}{{ if (has $v "comment") }}: {{ $v.comment }}{{ end }}"
+add list="$runId:vlan:{{ $v.name }}" address={{ $v.ipv6.pool }} \
+    comment="{{ $bridge }}.{{ $v.id }}{{ if (has $v "comment") }}: {{ $v.comment }}{{ end }}"
+
+{{-      if (has $v "lists") }}
+{{-        range $i := $v.lists }}
+add list="$runId:vlan:{{ $i }}" address={{ $v.ipv6.pool }} \
+    comment="{{ $bridge }}.{{ $v.id }}{{ if (has $v "comment") }}: {{ $v.comment }}{{ end }}"
+{{-        end }}
+{{-      end }}
+
+{{-    end }}
 {{-   end }}
 
 {{- end }}
