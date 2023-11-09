@@ -50,7 +50,7 @@ set [ find where interface="{{ .interface }}" and dynamic=no ] \
   [ :len [ find where dst-address="::/0" and dynamic=no ] ] = 0 \
 ) do={ add dst-address="::/0" gateway="{{ $gateway }}" }
 set [ find where dst-address="::/0" and dynamic=no ] \
-    gateway="{{ $gateway }}" \
+    gateway="{{ $gateway }}%{{ .interface }}" \
     disabled=no \
     comment="Default Gateway for {{ .comment }}"
 
