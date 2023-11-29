@@ -55,7 +55,7 @@ add list="$runId:vlan:{{ $v.name }}" address={{ $network }}/{{ $prefix }} \
 
 {{-     if (has $v "lists") }}
 {{-       range $i := $v.lists }}
-add list="$runId:vlan:{{ $i }}" address={{ $network }}/{{ $prefix }} \
+add list="$runId:{{ $i }}" address={{ $network }}/{{ $prefix }} \
     comment="{{ $bridge }}.{{ $v.id }}{{ if (has $v "comment") }}: {{ $v.comment }}{{ end }}"
 {{-       end }}
 {{-     end }}
@@ -70,7 +70,7 @@ add list="$runId:vlan:{{ $v.name }}" address={{ $v.ipv6.pool }} \
 
 {{-      if (has $v "lists") }}
 {{-        range $i := $v.lists }}
-add list="$runId:vlan:{{ $i }}" address={{ $v.ipv6.pool }} \
+add list="$runId:{{ $i }}" address={{ $v.ipv6.pool }} \
     comment="{{ $bridge }}.{{ $v.id }}{{ if (has $v "comment") }}: {{ $v.comment }}{{ end }}"
 {{-        end }}
 {{-      end }}
