@@ -108,12 +108,7 @@ add chain="$runId:icmp:ping" \
 {{- if (ne (ds "host").export "netinstall") }}
 
 add chain="$runId:icmp:ping" \
-    dst-address-list="$runId:icmp:unrestricted" \
-    action=accept \
-    comment="DROP any ICMP Echo Request packets to unrestricted hosts, rather than add to restricted list"
-
-add chain="$runId:icmp:ping" \
-    src-address-list="$runId:icmp:trusted" \
+    src-address-list="$runId:icmp:unrestricted" \
     action=accept \
     comment="DROP any ICMP Echo Request packets from unrestricted hosts, rather than add to restricted list"
 
