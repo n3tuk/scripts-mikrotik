@@ -1,0 +1,10 @@
+{
+  "secrets": {
+    "ssh": {"key": "PRIVATE-KEY"},
+    "ssl": {"key": "PRIVATE-KEY", "certificate": "CERTIFICATE"}
+    "wifi": {
+      "home": "this-is-the-psk-for-home-wifi",
+      "guest": "this-is-the-psk-for-guest-wifi"
+    }
+  }
+}

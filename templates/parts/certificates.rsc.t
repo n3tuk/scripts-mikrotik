@@ -32,9 +32,9 @@
 {{-   end }}
 {{- end }}
 
-{{- if (and (has (ds "host").settings "ssl")
-            (and (has (ds "host").settings.ssl "key")
-                 (has (ds "host").settings.ssl "certificate"))) }}
+{{- if (and (has (ds "host").secrets "ssl")
+            (and (has (ds "host").secrets.ssl "key")
+                 (has (ds "host").secrets.ssl "certificate"))) }}
 
 {{    template "component" "Host Certificate" }}
 
@@ -50,8 +50,8 @@
     [ :len [ /file find where name="{{ $name }}.pem" ] ] > 0 \
   ) do={ /file remove "{{ $name }}.pem" }
   /file add name="{{ $name }}.pem" \
-            contents="{{ (ds "host").settings.ssl.key | strings.Trim "\n" }}
-{{ (ds "host").settings.ssl.certificate | strings.Trim "\n" }}"
+            contents="{{ (ds "host").secrets.ssl.key | strings.Trim "\n" }}
+{{ (ds "host").secrets.ssl.certificate | strings.Trim "\n" }}"
   # This is needed to ensure the file is ready for reading by the import
   :delay 300ms
   /certificate import name="{{ $name }}" \

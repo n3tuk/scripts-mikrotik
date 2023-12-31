@@ -44,24 +44,6 @@ settings:
   mtu: 2000
   l2mtu: 2092
 
-  # Each host will have SSH enabled for remote access, including uploading these
-  # exported scripts to run. By setting the key here under SSH, the SSH host
-  # private key can be defined so that the host can provide a consistent public
-  # key to verify the host when connecting between updated or re-initialisations.
-  ssh:
-    key: |
-      -- PRIVATE KEY --
-
-  # Each host can have WebFig and the API made available over HTTPS for remote
-  # monitoring and management. If the key and certificate are set, like below,
-  # under ssl, then the appropriate certificates can be installed onto the host
-  # and then configured against the two services, and therefore enabling access.
-  ssl:
-    key: |
-      -- PRIVATE KEY --
-    certificate: |
-      -- CERTIFICATE --
-
   # Set the timezone for this server to properly configure the local time and
   # any checks for summer/winter times. This is based on the standard tz
   # database, more of which be found in the Wiki:
@@ -83,6 +65,29 @@ settings:
       comment: NTP Pool Project for United Kingdom
     - address: 3.uk.pool.ntp.org
       comment: NTP Pool Project for United Kingdom
+
+# The secrets map is a collection of values which cam be used as secrets,
+# specifically for this host, and mapped to by other values (e.g. ssh.key for
+# the private key for SSH on this host). Normally the secrets block should be
+# empty, and overridden by values from Vault.
+secrets:
+  # Each host will have SSH enabled for remote access, including uploading these
+  # exported scripts to run. By setting the key here under SSH, the SSH host
+  # private key can be defined so that the host can provide a consistent public
+  # key to verify the host when connecting between updated or re-initialisations.
+  ssh:
+    key: |
+      -- PRIVATE KEY --
+
+  # Each host can have WebFig and the API made available over HTTPS for remote
+  # monitoring and management. If the key and certificate are set, like below,
+  # under ssl, then the appropriate certificates can be installed onto the host
+  # and then configured against the two services, and therefore enabling access.
+  ssl:
+    key: |
+      -- PRIVATE KEY --
+    certificate: |
+      -- CERTIFICATE --
 
 # The network is only configured with a single bridge interface on each host
 # to which all physical are attached, and then all of these are variously

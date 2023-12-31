@@ -16,6 +16,11 @@
 {{-   $v := merge $v $v_defaults }}
 {{-   if (has $v "wifi") }}
 {{-     $profiles = $profiles | append $v.name }}
+{{-     $psk := "" }}
+{{-     if (and (and (has $v.wifi "psk") (has $v.wifi.psk "secret"))
+                (has (ds "network").secrets.wifi $v.wifi.psk.secret)) }}
+{{-       $psk = (index (ds "network").secrets.wifi $v.wifi.psk.secret) }}
+{{-     end }}
 
 {{      template "item" $v.name }}
 
@@ -24,9 +29,13 @@
 ) do={ add name="{{ $v.name }}" }
 
 set [ find where name="{{ $v.name }}" ] \
+{{-     if (eq $psk "") }}
+    mode=none
+{{-     else }}
     mode=dynamic-keys \
     authentication-types=wpa2-psk \
-    wpa2-pre-shared-key="{{ $v.wifi.psk }}"
+    wpa2-pre-shared-key="{{ $psk }}"
+{{-     end }}
 
 {{-   end }}
 {{- end }}

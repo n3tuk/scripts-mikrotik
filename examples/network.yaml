@@ -21,6 +21,15 @@ settings:
   wifi:
     country: united kingdom
 
+# The secrets map is a collection of values which cam be used as secrets,
+# specifically for this network, and mapped to by other values (e.g. psk.secret
+# for each WiFi network). Normally the secrets block should be empty, and
+# overridden by values from Vault.
+secrets:
+  wifi:
+    home: this-is-the-psk-for-home-wifi
+    guest: this-is-the-psk-for-guest-wifi
+
 ranges:
   # Define the internal ranges for the network, which will be used to lock down
   # all host-based services (SSH, WinBox, WebFig, Graphs, and WinBox) across the
@@ -201,10 +210,12 @@ vlans:
     # Where a VLAN is expected to be connected to a wireless interface (either
     # physically or virtually), the wifi block should be provided to set the
     # public name of that network, broadcast as its SSID, and the pre-shared-key
-    # (psk) which will be the WPA2 password (WPA1 will be disabled).
+    # (which can be found under secrets.wifi using the psk.secret key) which
+    # will be the WPA2 password (WPA1 will be disabled).
     wifi:
       ssid: Home WiFi
-      psk: this-is-the-psk-for-home-wifi
+      psk:
+        secret: home
     firewall:
       rules:
         - comment: Allow access to all networks and the Internet
@@ -221,8 +232,9 @@ vlans:
       address: 2001:0db8:8086:21::/64
       type: slaac
     wifi:
-      ssid: Private WiFi
-      psk: this-is-the-psk-for-private-wifi
+      ssid: Guest WiFi
+      psk:
+        secret: guest
     firewall:
       rules:
         - comment: Allow access to the Internet

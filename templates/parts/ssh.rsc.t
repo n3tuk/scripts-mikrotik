@@ -24,8 +24,8 @@ set forwarding-enabled=no \
     strong-crypto=yes
 
 {{- if (and (eq (ds "host").export "certificates")
-            (and (has (ds "host").settings "ssh")
-                 (has (ds "host").settings.ssh "key"))) }}
+            (and (has (ds "host").secrets "ssh")
+                 (has (ds "host").secrets.ssh "key"))) }}
 
 /file
 
@@ -34,7 +34,7 @@ set forwarding-enabled=no \
   [ :len [ find where name="ssh-host-key.pem" ] ] > 0 \
 ) do={ remove "ssh-host-key.pem" }
 add name="ssh-host-key.pem" \
-    contents="{{ (ds "host").settings.ssh.key | strings.Trim "\n" }}"
+    contents="{{ (ds "host").secrets.ssh.key | strings.Trim "\n" }}"
 
 # This is needed to ensure the file is ready for reading by the import
 :delay 250ms

@@ -16,6 +16,8 @@ description: |-
 
 settings:
   timezone: Europe/London
+
+secrets:
   ssh:
     key: |
       -- PRIVATE KEY --
