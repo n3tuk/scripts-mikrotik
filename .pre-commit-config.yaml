@@ -42,11 +42,11 @@ repos:
   - repo: https://github.com/igorshubovych/markdownlint-cli.git
     rev: v0.35.0
     hooks:
-      - id: markdownlint-docker
+      - id: markdownlint
         name: Check Markdown correctness and formatting
 
   - repo: https://github.com/zricethezav/gitleaks.git
     rev: v8.17.0
     hooks:
-      - id: gitleaks-docker
+      - id: gitleaks
         name: Check for hard-coded secrets, keys, and credentials
