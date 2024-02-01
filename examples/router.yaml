@@ -89,6 +89,17 @@ secrets:
     certificate: |
       -- CERTIFICATE --
 
+  # Wireguard requires keys for certificates on each end, and can support
+  # pre-shared-keys as effectively symmetric encryption on the data. The key
+  # below defines the private key for this host to be validated by the public
+  # key on the remote hosts, and naked pre-shared-keys which can be referenced
+  # in the peers configuration of the wireguard interface.
+  wireguard:
+    key: PRIVATE-KEY==
+    psk:
+      laptop: PRE-SHARED-KEY==
+      mobile: PRE-SHARED-KEY==
+
 # The network is only configured with a single bridge interface on each host
 # to which all physical are attached, and then all of these are variously
 # associated with VLANs in tagged and untagged configurations. This block
@@ -206,3 +217,52 @@ interfaces:
     # This is a 10GbE port, so reduce the cost, as per the above table
     cost: 2000
     comment: switch1 (trunk)
+
+  # A Wireguard interface is more complex than a standard interface as it
+  # requires information about the hosts expected to connect to it alongside
+  # the configuration of the interface itself.
+  - name: wgd01
+    enabled: true
+    # Ensure the type is set to wireguard to correctly configure the interface
+    type: wireguard
+    key: wgd01
+    port: 2133
+    mtu: 1420
+    # The address of this interface should both be the address which it should
+    # respond to, as well as the addresses to be expected to be found through
+    # this interface. A route to this range will be created automatically.
+    address: 172.16.254.1/24
+    peers:
+      # Each peer is a key/map entry here, defined with the public key
+      # associated with it, and a static address associated with that endpoint
+      # (which must exist within the range of addresses above)
+      server:
+        key: PUBLIC-KEY==
+        enabled: true
+        address: 172.16.254.2
+        # If this host is expected to be able to initiate a connection (i.e. it
+        # is a site-to-site tunnel), then add the address and port of the remote
+        # host under the endpoint key
+        endpoint:
+          address: 192.0.2.22
+          port: 2133
+        # If traffic is expected to be routed over this tunnel to the remote
+        # host, then add all the routes which are to be directed over this
+        # connection, which will be added as static entries.
+        routes:
+          - ipv4: 172.16.253.0/24
+            comment: Internal Services VLAN
+        comment: Web Server
+      # If any connection is to be a road-warrior type (i.e. incoming only and
+      # no routing), then just add the public key of the host and the IP address
+      # which is to be associated with the other end of the connection
+      laptop:
+        key: PUBLIC-KEY==
+        enabled: true
+        address: 172.27.254.3
+        comment: Personal Laptop
+      mobile:
+        key: PUBLIC-KEY==
+        enabled: true
+        address: 172.27.254.4
+        comment: Personal Laptop

@@ -99,7 +99,7 @@ add chain="$runId:input:external" \
 
 add chain="$runId:input:wireguard" \
     protocol=udp \
-    dst-port=52729 \
+    dst-port=2133 \
     action=accept \
     comment="ACCEPT all WireGuard connections"
 
@@ -107,7 +107,7 @@ add chain="$runId:input:wireguard" \
 
 add chain="$runId:input:wireguard" \
     protocol=udp \
-    dst-port=52729 \
+    dst-port=2133 \
     action=accept \
     comment="ACCEPT all WireGuard connections"
 
