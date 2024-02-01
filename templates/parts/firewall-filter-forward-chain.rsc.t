@@ -46,6 +46,13 @@ add chain="$runId:forward" \
     comment="Process all NTP connections and packets"
 
 add chain="$runId:forward" \
+    protocol=tcp \
+    dst-port=22 \
+    action=jump \
+    jump-target="$runId:check:ssh" \
+    comment="Process all SSH connections and packets"
+
+add chain="$runId:forward" \
     connection-state=new \
     action=jump \
     jump-target="$runId:forward:ports" \

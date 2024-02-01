@@ -16,15 +16,15 @@ add chain="$runId:output:external" \
             (eq (ds "host").type "router")) }}
 
 add chain="$runId:output:external" \
-    src-address-list="$runId:wireguard:trusted" \
+    dst-address-list="$runId:wireguard:trusted" \
     action=jump \
-    jump-target="$runId:output:external:wireguard" \
+    jump-target="$runId:output:wireguard" \
     comment="Process WireGuard connections to trusted hosts"
 
 add chain="$runId:output:external" \
-    src-address-list="$runId:ipsec:trusted" \
+    dst-address-list="$runId:ipsec:trusted" \
     action=jump \
-    jump-target="$runId:output:external:ipsec" \
+    jump-target="$runId:output:ipsec" \
     disabled=yes \
     comment="Process all IPsec connections to trusted hosts"
 
@@ -43,15 +43,15 @@ add chain="$runId:output:external" \
             (eq (ds "host").type "router")) }}
 
 add chain="$runId:output:external" \
-    src-address-list="$runId:wireguard:trusted" \
+    dst-address-list="$runId:wireguard:trusted" \
     action=jump \
-    jump-target="$runId:output:external:wireguard" \
+    jump-target="$runId:output:wireguard" \
     comment="Process WireGuard connections to trusted hosts"
 
 add chain="$runId:output:external" \
-    src-address-list="$runId:ipsec:trusted" \
+    dst-address-list="$runId:ipsec:trusted" \
     action=jump \
-    jump-target="$runId:output:external:ipsec" \
+    jump-target="$runId:output:ipsec" \
     disabled=yes \
     comment="Process all IPsec connections to trusted hosts"
 
@@ -60,50 +60,50 @@ add chain="$runId:output:external" \
 {{- if (and (ne (ds "host").export "netinstall")
             (eq (ds "host").type "router")) }}
 
-{{ template "item" "filter/output:external:wireguard chain" }}
+{{ template "item" "filter/output:wireguard chain" }}
 
 /ip firewall filter
 
-add chain="$runId:output:external:wireguard" \
+add chain="$runId:output:wireguard" \
     protocol=udp \
-    dst-port=52729 \
+    dst-port=2133 \
     action=accept \
     comment="ACCEPT all WireGuard connections"
 
 /ipv6 firewall filter
 
-add chain="$runId:output:external:wireguard" \
+add chain="$runId:output:wireguard" \
     protocol=udp \
-    dst-port=52729 \
+    dst-port=2133 \
     action=accept \
     comment="ACCEPT all WireGuard connections"
 
-{{ template "item" "filter/output:external:ipsec chain" }}
+{{ template "item" "filter/output:ipsec chain" }}
 
 /ip firewall filter
 
-add chain="$runId:output:external:ipsec" \
+add chain="$runId:output:ipsec" \
     ipsec-policy=out,ipsec \
     action=accept \
     comment="ACCEPT all connections encrypted via IPsec"
 
-add chain="$runId:output:external:ipsec" \
+add chain="$runId:output:ipsec" \
     protocol=ipsec-esp \
     action=accept \
     comment="ACCEPT all ESP connections encrypted"
 
-add chain="$runId:output:external:ipsec" \
+add chain="$runId:output:ipsec" \
     protocol=ipsec-ah \
     action=accept \
     comment="ACCEPT all AH connections encrypted"
 
-add chain="$runId:output:external:ipsec" \
+add chain="$runId:output:ipsec" \
     protocol=udp \
     dst-port=4500 \
     action=accept \
     comment="ACCEPT IKEv2 connections"
 
-add chain="$runId:output:external:ipsec" \
+add chain="$runId:output:ipsec" \
     protocol=udp \
     dst-port=500 \
     action=accept \
@@ -112,28 +112,28 @@ add chain="$runId:output:external:ipsec" \
 
 /ipv6 firewall filter
 
-add chain="$runId:output:external:ipsec" \
+add chain="$runId:output:ipsec" \
     ipsec-policy=out,ipsec \
     action=accept \
     comment="ACCEPT all connections encrypted via IPsec"
 
-add chain="$runId:output:external:ipsec" \
+add chain="$runId:output:ipsec" \
     protocol=ipsec-esp \
     action=accept \
     comment="ACCEPT all ESP connections encrypted"
 
-add chain="$runId:output:external:ipsec" \
+add chain="$runId:output:ipsec" \
     protocol=ipsec-ah \
     action=accept \
     comment="ACCEPT all AH connections encrypted"
 
-add chain="$runId:output:external:ipsec" \
+add chain="$runId:output:ipsec" \
     protocol=udp \
     dst-port=4500 \
     action=accept \
     comment="ACCEPT IKEv2 connections"
 
-add chain="$runId:output:external:ipsec" \
+add chain="$runId:output:ipsec" \
     protocol=udp \
     dst-port=500 \
     action=accept \

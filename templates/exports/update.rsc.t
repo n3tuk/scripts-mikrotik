@@ -12,4 +12,5 @@
 {{ template "parts/bridge.rsc.t" }}
 {{ template "parts/vlans.rsc.t" }}
 {{ template "parts/firewall.rsc.t" }}
+{{ template "parts/wireguard.rsc.t" }}
 {{ template "parts/footer.rsc.t" }}

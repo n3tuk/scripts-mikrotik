@@ -33,7 +33,7 @@ add chain="$runId:check:ssh" \
 add chain="$runId:check:ssh" \
     src-address-list="!$runId:ssh:allowed" \
     action=drop \
-    log=yes \
+    log=no \
     log-prefix="DROP>" \
     comment="DROP all connections and packets not from allowed networks"
 
@@ -42,14 +42,14 @@ add chain="$runId:check:ssh" \
     connection-state=new \
     protocol=tcp \
     action=tarpit \
-    log=yes \
+    log=no \
     log-prefix="TARPIT!" \
     comment="TARPIT (hold open) new SSH connections from restricted hosts"
 
 add chain="$runId:check:ssh" \
     src-address-list="dynamic:ssh:restricted" \
     action=drop \
-    log=yes \
+    log=no \
     log-prefix="DROP!" \
     comment="DROP all other SSH packets from restricted hosts"
 
@@ -62,7 +62,7 @@ add chain="$runId:check:ssh" \
 add chain="$runId:check:ssh" \
     src-address-list="$runId:ssh:unrestricted" \
     action=drop \
-    log=yes \
+    log=no \
     log-prefix="DROP|" \
     comment="DROP, but do not restrict, unrestricted hosts if the rate limit is exceeded"
 
@@ -71,13 +71,13 @@ add chain="$runId:check:ssh" \
     action=add-src-to-address-list \
     address-list="dynamic:ssh:restricted" \
     address-list-timeout=26w \
-    log=yes \
+    log=no \
     log-prefix="TARPIT+" \
     comment="ADD the source host to restricted list if the rate limit is exceeded"
 
 add chain="$runId:check:ssh" \
     action=drop \
-    log=yes \
+    log=no \
     log-prefix="DROP!" \
     comment="DROP all other SSH connections and packets"
 
@@ -91,14 +91,14 @@ add chain="$runId:check:ssh" \
 add chain="$runId:check:ssh" \
     src-address-list="!$runId:ssh:allowed" \
     action=drop \
-    log=yes \
+    log=no \
     log-prefix="DROP>" \
     comment="DROP all connections and packets not from allowed networks"
 
 add chain="$runId:check:ssh" \
     src-address-list="dynamic:ssh:restricted" \
     action=drop \
-    log=yes \
+    log=no \
     log-prefix="DROP!" \
     comment="DROP all SSH packets from restricted hosts"
 
@@ -111,7 +111,7 @@ add chain="$runId:check:ssh" \
 add chain="$runId:check:ssh" \
     src-address-list="$runId:ssh:unrestricted" \
     action=drop \
-    log=yes \
+    log=no \
     log-prefix="DROP|" \
     comment="DROP, but do not restrict, unrestricted hosts if the rate limit is exceeded"
 
@@ -120,12 +120,12 @@ add chain="$runId:check:ssh" \
     action=add-src-to-address-list \
     address-list="dynamic:ssh:restricted" \
     address-list-timeout=26w \
-    log=yes \
+    log=no \
     log-prefix="DROP+" \
     comment="ADD the source host to restricted list if the rate limit is exceeded"
 
 add chain="$runId:check:ssh" \
     action=drop \
-    log=yes \
+    log=no \
     log-prefix="DROP!" \
     comment="DROP all other SSH connections and packets"

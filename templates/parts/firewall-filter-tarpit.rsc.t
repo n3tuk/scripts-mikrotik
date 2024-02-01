@@ -47,7 +47,7 @@ add chain="$runId:tarpit" \
     action=add-src-to-address-list \
     address-list="dynamic:tarpit:restricted" \
     address-list-timeout=26w \
-    log=yes \
+    log=no \
     log-prefix="TARPIT+" \
     comment="Add source host to restricted list if rate limit exceeded"
 
@@ -66,7 +66,7 @@ add chain="$runId:tarpit:drop" \
 
 add chain="$runId:tarpit:drop" \
     action=drop \
-    log=yes \
+    log=no \
     log-prefix="DROP!" \
     comment="DROP all other packet types from restricted hosts silently"
 
@@ -103,7 +103,7 @@ add chain="$runId:tarpit" \
     action=add-src-to-address-list \
     address-list="dynamic:tarpit:restricted" \
     address-list-timeout=26w \
-    log=yes \
+    log=no \
     log-prefix="TARPIT+" \
     comment="Add source host to restricted list if rate limit exceeded"
 
@@ -114,6 +114,6 @@ add chain="$runId:tarpit" \
 
 add chain="$runId:tarpit:drop" \
     action=drop \
-    log=yes \
+    log=no \
     log-prefix="DROP!" \
     comment="DROP all packets from restricted hosts silently"

@@ -10,8 +10,6 @@
 {{- define "section" -}}
 :log info "{{ (ds "host").export }}.rsc/$runId: {{ . }}"
 {{-   if (not (eq (ds "host").export "netinstall")) }}
-:put "╶──>                                             "
-:terminal cuu
 :put "╶──> {{ . }}"
 {{-   end -}}
 {{- end }}
@@ -19,7 +17,6 @@
 {{- define "error" -}}
 :log error "{{ (ds "host").export }}.rsc/$runId: {{ . }}"
 {{-   if (not (eq (ds "host").export "netinstall")) }}
-:put ""
 :terminal style error
 :put " ╶─> {{ . }}"
 :terminal style none
@@ -29,8 +26,6 @@
 {{- define "component" -}}
 :log info "{{ (ds "host").export }}.rsc/$runId: {{ . }}"
 {{-   if (not (eq (ds "host").export "netinstall")) }}
-:put " ╶─>                                             "
-:terminal cuu
 :put " ╶─> {{ . }}"
 {{-   end -}}
 {{- end }}
@@ -38,10 +33,7 @@
 {{- define "item" -}}
 :log info "{{ (ds "host").export }}.rsc/$runId: {{ . }}"
 {{-   if (not (eq (ds "host").export "netinstall")) }}
-:put "  ╶>                                             "
-:terminal cuu
 :put "  ╶> {{ . }}"
-:terminal cuu
 {{-   end -}}
 {{- end }}
 

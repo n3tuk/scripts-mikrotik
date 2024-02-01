@@ -34,7 +34,7 @@ add chain="$runId:reject" \
     dst-limit=3/5m,5,src-and-dst-addresses/3h \
     action=reject \
     reject-with=icmp-admin-prohibited \
-    log=yes \
+    log=no \
     log-prefix="REJECT!" \
     comment="Politely REJECT all connections with ICMP response (rated limited to 5/min)"
 

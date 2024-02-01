@@ -1,0 +1,14 @@
+{
+  "secrets": {
+    "ssh": {"key": "PRIVATE-KEY"},
+    "ssl": {"key": "PRIVATE-KEY", "certificate": "CERTIFICATE"},
+    "wireguard": {
+      "key": "PRIVATE-KEY",
+      "psk": {"laptop": "PRE-SHARED-KEY", "mobile": "PRE-SHARED-KEY"}
+    },
+    "wifi": {
+      "home": "this-is-the-psk-for-home-wifi",
+      "guest": "this-is-the-psk-for-guest-wifi"
+    }
+  }
+}
