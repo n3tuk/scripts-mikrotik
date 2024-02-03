@@ -15,9 +15,9 @@ settings:
     - address: 172.16.1.1
       comment: Network NTP Server (router)
 
-  # All wireless interfaces should be configured for their regional domain,
-  # which defines usable frequencies and power levels, so allow this to be set
-  # here as a common value across the network.
+  # All wifi interfaces should be configured for their regional domain, which
+  # defines usable frequencies and power levels, so allow this to be set here as
+  # a common value across the network.
   wifi:
     country: united kingdom
 
@@ -207,7 +207,7 @@ vlans:
     ipv6:
       address: 2001:0db8:8086:20::/64
       type: slaac
-    # Where a VLAN is expected to be connected to a wireless interface (either
+    # Where a VLAN is expected to be connected to a wifi interface (either
     # physically or virtually), the wifi block should be provided to set the
     # public name of that network, broadcast as its SSID, and the pre-shared-key
     # (which can be found under secrets.wifi using the psk.secret key) which

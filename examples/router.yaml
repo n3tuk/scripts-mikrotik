@@ -146,7 +146,7 @@ interfaces:
     original: ether1
     # The type can define which type of physical interface this is. By default
     # the type is ethernet and only needs to be defined where it is different
-    # (i.e. setting to wireless for wireless interfaces).
+    # (i.e. setting to wifi for wifi interfaces).
     type: ethernet
     # Every interface is disabled by default and must be explicit enabled before
     # it can be used, ensuing that they cannot be accidentally active.
