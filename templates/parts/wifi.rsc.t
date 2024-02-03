@@ -1,15 +1,15 @@
-# -- templates/parts/wireless.rsc.t
+# -- templates/parts/wifi.rsc.t
 {{- /* vim:set ft=routeros: */}}
-# Configure the wireless interfaces for this host to set up them up as access
-# points for wireless clients to connect to, and then connect them to the
-# appropriate Bridge and VLANs for passing traffic across
+# Configure the wifi interfaces for this host to set up them up as access points
+# for wifi clients to connect to, and then connect them to the appropriate
+# Bridge and VLANs for passing traffic across
 
 {{- $v_defaults := coll.Dict "enabled" true "comment" "VLAN" }}
 {{- $i_defaults := coll.Dict "enabled" false "type" "ethernet" "vlan" "blocked" "comment" "Unused" }}
 
-{{  template "component" "Configure the Wireless Profiles" }}
+{{  template "component" "Configure the wifi Profiles" }}
 
-/interface wireless security-profiles
+/interface wifi security-profiles
 
 {{- $profiles := coll.Slice }}
 {{- range $v := (ds "network").vlans }}
@@ -40,13 +40,13 @@ set [ find where name="{{ $v.name }}" ] \
 {{-   end }}
 {{- end }}
 
-{{  template "component" "Configure the Wireless Interfaces" }}
+{{  template "component" "Configure the wifi Interfaces" }}
 
-/interface wireless
+/interface wifi
 
 {{- range $i := (ds "host").interfaces }}
 {{-   $i = merge $i $i_defaults }}
-{{-   if (ne $i.type "wireless") }}
+{{-   if (ne $i.type "wifi") }}
 {{-     continue }}
 {{-   end }}
 
@@ -119,9 +119,9 @@ set [ find where name="{{ $i.name }}" ] \
 {{-     end }}
 {{-   end }}
 
-/interface wireless
+/interface wifi
 
-# Remove any virtual wireless interfaces which we do not expect based on the
+# Remove any virtual wifi interfaces which we do not expect based on the
 # configuration, as this must be done first before we can add any to ensure we
 # do not exceed the limits on virtual interfaces
 remove [
@@ -158,7 +158,7 @@ set [ find where name="{{ $i.name }}.{{ $virtual.id }}" ] \
 
 {{- end }}
 
-/interface wireless security-profiles
+/interface wifi security-profiles
 
 remove [
   find where default=no

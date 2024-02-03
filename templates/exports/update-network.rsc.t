@@ -4,7 +4,7 @@
 {{  template "parts/interfaces.rsc.t" }}
 {{- if (and (eq (ds "host").type "ap")
             (not (eq (ds "host").export "netinstall"))) }}
-{{    template "parts/wireless.rsc.t" }}
+{{    template "parts/wifi.rsc.t" }}
 {{- end }}
 {{  template "parts/bridge.rsc.t" }}
 {{  template "parts/vlans.rsc.t" }}
