@@ -5,7 +5,7 @@
 # configurations needed.
 
 {{- $i_defaults := coll.Dict "enabled" false "type" "ethernet" "vlan" "blocked" "comment" "" "mtu" 1420 "address" coll.Dict }}
-{{- $p_defaults := coll.Dict "enabled" false "comment" "" "keepalive" 0 }}
+{{- $p_defaults := coll.Dict "enabled" false "comment" "" "keepalive" 0 "routes" (coll.Slice) }}
 {{- $interfaces := coll.Slice }}
 
 {{  template "section" "Set up Wireguard Interfaces" }}
@@ -180,7 +180,10 @@ remove [
 # How to remove route for deleted interfaces?
 
 remove [
-  find where !(
+  find
+{{- if (gt (len $interfaces) 0) -}} \
+  where !(
     name={{ conv.Join $interfaces " or \\\n    name=" }}
   )
+{{- end }}
 ]
