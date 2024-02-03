@@ -236,7 +236,7 @@ interfaces:
       # Each peer is a key/map entry here, defined with the public key
       # associated with it, and a static address associated with that endpoint
       # (which must exist within the range of addresses above)
-      server:
+      - name: server
         key: PUBLIC-KEY==
         enabled: true
         address: 172.16.254.2
@@ -256,12 +256,12 @@ interfaces:
       # If any connection is to be a road-warrior type (i.e. incoming only and
       # no routing), then just add the public key of the host and the IP address
       # which is to be associated with the other end of the connection
-      laptop:
+      - name: laptop
         key: PUBLIC-KEY==
         enabled: true
         address: 172.27.254.3
         comment: Personal Laptop
-      mobile:
+      - name: mobile
         key: PUBLIC-KEY==
         enabled: true
         address: 172.27.254.4
