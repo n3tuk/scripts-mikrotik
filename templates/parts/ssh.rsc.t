@@ -11,10 +11,11 @@
 
 # These are the normal modes of access for maintenance, so enable and permit
 # access to these services from trusted networks only
-set ssh disabled=no \
-        address={{  join (ds "network").ranges.internal "," }},
-                {{- join (ds "network").ranges.ssh "," -}}
-                {{- if (eq (ds "host").export "netinstall") }},192.168.88.0/24{{ end }} port=22
+set ssh \
+    disabled=no \
+    address={{  join (ds "network").ranges.internal "," }},
+            {{- join (ds "network").ranges.ssh "," }} \
+    port=22
 
 /ip ssh
 

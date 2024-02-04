@@ -3,7 +3,6 @@
 
 /ip settings
 set allow-fast-path=yes \
-    route-cache=yes \
     rp-filter=loose \
     accept-source-route=no \
     accept-redirects=no \

@@ -19,4 +19,13 @@
 {{ template "parts/interfaces.rsc.t" }}
 {{ template "parts/bootstrap.rsc.t" }}
 {{ template "parts/firewall.rsc.t" }}
+
+/system/leds
+
+:if ( \
+  [ :len [ find where leds=user-led ] ] = 0 \
+) do={ add leds=user-led type=on }
+set [ find where leds=user-led ] \
+    type=on
+
 {{ template "parts/footer.rsc.t" }}
