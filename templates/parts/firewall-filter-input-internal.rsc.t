@@ -67,6 +67,13 @@ add chain="$runId:input:internal" \
     jump-target="$runId:input:api" \
     comment="Process all API connections from trusted hosts"
 
+add chain="$runId:input:internal" \
+    src-address-list="$runId:bgp:trusted" \
+    connection-state=new \
+    action=jump \
+    jump-target="$runId:input:bgp" \
+    comment="Process all BGP connections from trusted hosts"
+
 {{- end }}
 
 add chain="$runId:input:internal" \
@@ -127,6 +134,13 @@ add chain="$runId:input:internal" \
     action=jump \
     jump-target="$runId:input:api" \
     comment="Process all API connections from trusted hosts"
+
+add chain="$runId:input:internal" \
+    src-address-list="$runId:bgp:trusted" \
+    connection-state=new \
+    action=jump \
+    jump-target="$runId:input:bgp" \
+    comment="Process all BGP connections from trusted hosts"
 
 {{- end }}
 

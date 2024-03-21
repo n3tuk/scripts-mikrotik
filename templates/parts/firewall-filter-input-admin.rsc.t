@@ -55,4 +55,34 @@ add chain="$runId:input:api" \
     action=accept \
     comment="ACCEPT API connections over HTTPS"
 
+{{    template "item" "filter/input:bgp chain" }}
+
+/ip firewall filter
+
+add chain="$runId:input:bgp" \
+    protocol=tcp \
+    dst-port=179 \
+    action=accept \
+    comment="ACCEPT BGP connections for routing"
+
+add chain="$runId:input:bgp" \
+    protocol=udp \
+    dst-port=3784,3785,4784 \
+    action=accept \
+    comment="ACCEPT BFP connections for routing"
+
+/ipv6 firewall filter
+
+add chain="$runId:input:bgp" \
+    protocol=tcp \
+    dst-port=179 \
+    action=accept \
+    comment="ACCEPT BGP connections for routing"
+
+add chain="$runId:input:bgp" \
+    protocol=udp \
+    dst-port=3784,3785,4784 \
+    action=accept \
+    comment="ACCEPT BFP connections for routing"
+
 {{- end }}
