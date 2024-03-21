@@ -34,7 +34,7 @@ set [ find where name="{{ $v.name }}" ] \
 {{-     else }}
     mode=dynamic-keys \
     authentication-types=wpa2-psk \
-    wpa2-pre-shared-key="{{ $psk }}"
+    wpa2-pre-shared-key="{{ index (ds "network").secrets.wifi $v.wifi.psk.secret }}"
 {{-     end }}
 
 {{-   end }}
