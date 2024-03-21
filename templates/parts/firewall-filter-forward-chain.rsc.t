@@ -88,6 +88,14 @@ add chain="$runId:forward" \
     comment="Process rules for local VLANs"
 
 add chain="$runId:forward" \
+    protocol=tcp \
+    dst-port=22 \
+    connection-state=new \
+    action=jump \
+    jump-target="$runId:check:ssh" \
+    comment="Process all SSH connections and packets"
+
+add chain="$runId:forward" \
     action=jump \
     jump-target="$runId:reject" \
     comment="DROP all other connections"
@@ -167,6 +175,14 @@ add chain="$runId:forward" \
     action=jump \
     jump-target="$runId:forward:vlans" \
     comment="Process rules for local VLANs"
+
+add chain="$runId:forward" \
+    protocol=tcp \
+    dst-port=22 \
+    connection-state=new \
+    action=jump \
+    jump-target="$runId:check:ssh" \
+    comment="Process all SSH connections and packets"
 
 add chain="$runId:forward" \
     action=jump \
