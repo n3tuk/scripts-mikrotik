@@ -60,20 +60,18 @@ set api-ssl \
       disabled=yes
 }
 
-# TODO: Install Certificates for www-ssl and api-ssl services
-
 # Disable these following services as they are not required and should not be
 # used in any normal operation of this host
 
 /ip proxy
 
-:if ([get enabled]) do {
+:if ([ get enabled ]) do {
   set enabled=no
 }
 
 /ip socks
 
-:if ([get enabled]) do {
+:if ([ get enabled ]) do {
   set enabled=no
 }
 
@@ -90,7 +88,7 @@ set [ find default=no ] \
 
 /ip upnp
 
-:if ([get enabled]) do {
+:if ([ get enabled ]) do {
   set enabled=no
 }
 
@@ -113,13 +111,13 @@ set use-local-address=no
 
 /snmp
 
-:if ([get enabled]) do {
+:if ([ get enabled ]) do {
   set enabled=no
 }
 
 /tool bandwidth-server
 
-:if ([get enabled]) do {
+:if ([ get enabled ]) do {
   set enabled=no
 }
 
