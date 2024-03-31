@@ -75,15 +75,15 @@
 {{- if (eq (ds "host").export "netinstall") }}
 
 {{-   $ethernet := 0 }}
-{{-   $wifi := 0 }}
+{{-   $wireless := 0 }}
 
 {{-   range $i := (ds "host").interfaces }}
 {{-     $i = merge $i $i_defaults }}
 {{-     if (eq $i.type "ethernet") }}
 {{-       $ethernet = $ethernet | math.Add 1 }}
 {{-     end }}
-{{-     if (eq $i.type "wifi") }}
-{{-       $wifi = $wifi | math.Add 1 }}
+{{-     if (eq $i.type "wireless") }}
+{{-       $wireless = $wireless | math.Add 1 }}
 {{-     end }}
 {{-   end }}
 
@@ -97,11 +97,11 @@
   # Check every second for the number of interfaces available so we can continue
   while ( \
     $i < $t \
-{{-   if (eq $wifi 0) }}
+{{-   if (eq $wireless 0) }}
     && [ :len [ /interface ethernet find ] ] = 0 \
 {{-   else }}
     && (    [ :len [ /interface ethernet find ] ] = 0 \
-         || [ :len [ /interface wifi find ] ] = 0 ) \
+         || [ :len [ /interface wireless find ] ] = 0 ) \
 {{-   end }}
   ) do={
     :set $i ($i + 1)
@@ -118,15 +118,15 @@
     :log info "{{ (ds "host").export }}.rsc/$runId: Expected ethernet interfaces became available."
   }
 
-{{-   if (gt $wifi 0) }}
+{{-   if (gt $wireless 0) }}
 
-  if ([ :len [ /interface wifi find ] ] = 0) \
+  if ([ :len [ /interface wireless find ] ] = 0) \
   do={
-    :log error "{{ (ds "host").export }}.rsc/$runId: Not all wifi interfaces came up; aborting default setup"
-    :error "FATAL: Not all wifi interfaces came up; aborting default setup"
+    :log error "{{ (ds "host").export }}.rsc/$runId: Not all wireless interfaces came up; aborting default setup"
+    :error "FATAL: Not all wireless interfaces came up; aborting default setup"
     /quit
   } else {
-    :log info "{{ (ds "host").export }}.rsc/$runId: Expected wifi interfaces became available."
+    :log info "{{ (ds "host").export }}.rsc/$runId: Expected wireless interfaces became available."
   }
 {{- end }}
 }

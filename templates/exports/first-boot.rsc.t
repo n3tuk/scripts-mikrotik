@@ -9,6 +9,7 @@
 {{ template "parts/ntp.rsc.t" }}
 {{ template "parts/users.rsc.t" }}
 {{ template "parts/interfaces.rsc.t" }}
+{{ template "parts/wireless.rsc.t" }}
 {{ template "parts/bridge.rsc.t" }}
 {{ template "parts/vlans.rsc.t" }}
 {{ template "parts/firewall.rsc.t" }}

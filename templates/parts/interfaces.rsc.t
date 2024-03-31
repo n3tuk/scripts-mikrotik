@@ -31,7 +31,7 @@
 
 {{-   end }}
 
-{{-   if (and (eq $i.type "wifi")
+{{-   if (and (eq $i.type "wireless")
               (not (eq (ds "host").export "netinstall"))) }}
 {{-     continue }}
 {{-   end }}

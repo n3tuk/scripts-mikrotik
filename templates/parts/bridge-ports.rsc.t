@@ -21,7 +21,7 @@
 /interface bridge port
 
 {{- /*
-# The wifi interfaces need to be split in to individual interfaces for each of
+# The wireless interfaces need to be split in to individual interfaces for each of
 # the SSIDs, so pre-process the interfaces list from the host configuration to
 # fake the creation of these interfaces before creating the ports
 */}}
@@ -29,7 +29,7 @@
 {{- $interfaces := coll.Slice }}
 {{- range $interface := (ds "host").interfaces }}
 {{-   $interface = merge $interface $i_defaults }}
-{{-   if (and (eq $interface.type "wifi")
+{{-   if (and (eq $interface.type "wireless")
               (has $interface "vlans")) }}
 {{-     if (eq (ds "host").export "netinstall") }}
 {{-       continue }}
@@ -42,7 +42,7 @@
 {{-       range $v := (ds "network").vlans }}
 {{-         $v := merge $v $v_defaults }}
 {{-         if (and (eq $v.name $vlan)
-                    (has $v "wifi")) }}
+                    (has $v "wireless")) }}
 {{-           $virtual = $virtual | merge (coll.Dict "name" (print $interface.name "." $v.id)
                                                      "vlan" $v.name
                                                      "comment" (print $interface.comment " (" $vlan ")")) }}
@@ -61,7 +61,7 @@
 {{-     $cost := 20000 }}
 {{-     if (has $interface "cost") }}
 {{-       $cost = $interface.cost }}
-{{-     else if (eq $interface.type "wifi") }}
+{{-     else if (eq $interface.type "wireless") }}
 {{-       $cost = 80000 }}
 {{-     end }}
 

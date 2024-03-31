@@ -34,8 +34,8 @@
 {{-           $untagged = $untagged | append $i.name -}}
 {{-         else -}}
 {{-           if (and (has $i "vlans") (has $i.vlans $v.name)) }}
-{{-             if (eq $i.type "wifi") }}{{- /*
-                  # Even through wifi interfaces have vlans support for virtual
+{{-             if (eq $i.type "wireless") }}{{- /*
+                  # Even through wireless interfaces have vlans support for virtual
                   # interfaces, they are attached as untagged ports as each
                   # virtual interface becomes a dedicated interface  */}}
 {{-               $untagged = $untagged | append (print $i.name "." $v.id) }}
