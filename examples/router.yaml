@@ -237,8 +237,8 @@ interfaces:
       # associated with it, and a static address associated with that endpoint
       # (which must exist within the range of addresses above)
       - name: server
-        key: PUBLIC-KEY==
         enabled: true
+        key: PUBLIC-KEY==
         address: 172.16.254.2
         # If this host is expected to be able to initiate a connection (i.e. it
         # is a site-to-site tunnel), then add the address and port of the remote
@@ -251,18 +251,19 @@ interfaces:
         # connection, which will be added as static entries.
         routes:
           - ipv4: 172.16.253.0/24
+            enabled: true
             comment: Internal Services VLAN
         comment: Web Server
       # If any connection is to be a road-warrior type (i.e. incoming only and
       # no routing), then just add the public key of the host and the IP address
       # which is to be associated with the other end of the connection
       - name: laptop
-        key: PUBLIC-KEY==
         enabled: true
+        key: PUBLIC-KEY==
         address: 172.27.254.3
         comment: Personal Laptop
       - name: mobile
-        key: PUBLIC-KEY==
         enabled: true
+        key: PUBLIC-KEY==
         address: 172.27.254.4
         comment: Personal Laptop
