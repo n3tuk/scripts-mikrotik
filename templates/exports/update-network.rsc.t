@@ -13,4 +13,5 @@
 {{- end }}
 {{  template "parts/bridge.rsc.t" }}
 {{  template "parts/vlans.rsc.t" }}
+
 {{  template "parts/footer.rsc.t" }}
