@@ -1,4 +1,4 @@
-{{ template "parts/header.rsc.t" "Update" }}
+{{ template "parts/header.rsc.t" "First Boot" }}
 {{- /* vim:set ft=routeros: */}}
 # Initialise the basic configuration needed for this new, or factory-reset,
 # host, where it can then be reboot and the remaining configuration applied
