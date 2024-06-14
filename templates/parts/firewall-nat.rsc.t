@@ -25,21 +25,22 @@
 
 /ip firewall nat
 
-{{- if (and (eq (ds "host").type "router") (gt (len $ports) 0)) }}
-
-{{    template "item" "nat/dstnat jump" }}
-
-add chain="dstnat" \
-    action=jump \
-    jump-target="$runId:dstnat" \
-    comment="Process all packets passing entering through the DSTNAT chain"
-
 {{  template "item" "nat/srcnat jump" }}
 
 add chain="srcnat" \
     action=jump \
     jump-target="$runId:srcnat" \
     comment="Process all packets passing leaving through the SRCNAT chain"
+
+{{- if (and (eq (ds "host").type "router")
+            (gt (len $ports) 0)) }}
+
+{{  template "item" "nat/dstnat jump" }}
+
+add chain="dstnat" \
+    action=jump \
+    jump-target="$runId:dstnat" \
+    comment="Process all packets passing entering through the DSTNAT chain"
 
 {{    template "item" "nat/dstnat chain" }}
 
@@ -74,8 +75,6 @@ add chain="$runId:srcnat" \
 {{- end }}
 
 {{  template "item" "nat/srcnat chain" }}
-
-/ip firewall nat
 
 add chain="$runId:srcnat" \
     src-address-list="$runId:internal" \

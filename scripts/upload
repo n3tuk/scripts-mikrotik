@@ -21,7 +21,7 @@ if [[ ! -f "${export_file}.${export_ext}" ]]; then
 fi
 
 sub-note "Checking host is alive..."
-if ! ping -An -w1 -l3 -c3 "${host}" > /dev/null 2>&1; then
+if ! ping -An -w1 -l3 -c3 "${host}" >/dev/null 2>&1; then
   fatal "Cannot find host ${host}"
 fi
 

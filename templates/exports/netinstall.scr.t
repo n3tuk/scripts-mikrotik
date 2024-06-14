@@ -19,4 +19,5 @@
 {{ template "parts/interfaces.rsc.t" }}
 {{ template "parts/bootstrap.rsc.t" }}
 {{ template "parts/firewall.rsc.t" }}
+
 {{ template "parts/footer.rsc.t" }}

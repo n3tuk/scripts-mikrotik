@@ -60,25 +60,24 @@ set api-ssl \
       disabled=yes
 }
 
-# TODO: Install Certificates for www-ssl and api-ssl services
-
 # Disable these following services as they are not required and should not be
 # used in any normal operation of this host
 
 /ip proxy
 
-set enabled=no
+:if ([ get enabled ]) do {
+  set enabled=no
+}
 
 /ip socks
 
-set enabled=no
-
-/ip smb
-
-set enabled=no
+:if ([ get enabled ]) do {
+  set enabled=no
+}
 
 /ip smb shares
 
+# Disabling all SMB shares disabled the SMB service too
 set [ find ] \
     disabled=yes
 
@@ -89,8 +88,11 @@ set [ find default=no ] \
 
 /ip upnp
 
-set enabled=no \
-    allow-disable-external-interface=no \
+:if ([ get enabled ]) do {
+  set enabled=no
+}
+
+set allow-disable-external-interface=no \
     show-dummy-rule=no
 
 /ip upnp interfaces
@@ -109,12 +111,17 @@ set use-local-address=no
 
 /snmp
 
-set enabled=no
+:if ([ get enabled ]) do {
+  set enabled=no
+}
 
 /tool bandwidth-server
 
-set enabled=no \
-    authenticate=yes
+:if ([ get enabled ]) do {
+  set enabled=no
+}
+
+set authenticate=yes
 
 /tool graphing
 

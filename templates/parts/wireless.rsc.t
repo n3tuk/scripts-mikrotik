@@ -1,25 +1,25 @@
 # -- templates/parts/wireless.rsc.t
 {{- /* vim:set ft=routeros: */}}
-# Configure the wireless interfaces for this host to set up them up as access
-# points for wireless clients to connect to, and then connect them to the
-# appropriate Bridge and VLANs for passing traffic across
+# Configure the wireless interfaces for this host to set up them up as access points
+# for wireless clients to connect to, and then connect them to the appropriate
+# Bridge and VLANs for passing traffic across
 
 {{- $v_defaults := coll.Dict "enabled" true "comment" "VLAN" }}
 {{- $i_defaults := coll.Dict "enabled" false "type" "ethernet" "vlan" "blocked" "comment" "Unused" }}
 
-{{  template "component" "Configure the Wireless Profiles" }}
+{{  template "component" "Configure the wireless Profiles" }}
 
-/interface wireless security-profiles
+/interface wireless security
 
 {{- $profiles := coll.Slice }}
 {{- range $v := (ds "network").vlans }}
 {{-   $v := merge $v $v_defaults }}
-{{-   if (has $v "wifi") }}
+{{-   if (has $v "wireless") }}
 {{-     $profiles = $profiles | append $v.name }}
 {{-     $psk := "" }}
-{{-     if (and (and (has $v.wifi "psk") (has $v.wifi.psk "secret"))
-                (has (ds "network").secrets.wifi $v.wifi.psk.secret)) }}
-{{-       $psk = (index (ds "network").secrets.wifi $v.wifi.psk.secret) }}
+{{-     if (and (and (has $v.wireless "psk") (has $v.wireless.psk "secret"))
+                (has (ds "network").secrets.wireless $v.wireless.psk.secret)) }}
+{{-       $psk = (index (ds "network").secrets.wireless $v.wireless.psk.secret) }}
 {{-     end }}
 
 {{      template "item" $v.name }}
@@ -34,13 +34,13 @@ set [ find where name="{{ $v.name }}" ] \
 {{-     else }}
     mode=dynamic-keys \
     authentication-types=wpa2-psk \
-    wpa2-pre-shared-key="{{ index (ds "network").secrets.wifi $v.wifi.psk.secret }}"
+    wpa2-pre-shared-key="{{ index (ds "network").secrets.wireless $v.wireless.psk.secret }}"
 {{-     end }}
 
 {{-   end }}
 {{- end }}
 
-{{  template "component" "Configure the Wireless Interfaces" }}
+{{  template "component" "Configure the wireless Interfaces" }}
 
 /interface wireless
 
@@ -56,7 +56,7 @@ set [ find where name="{{ $v.name }}" ] \
 {{-   range $v := (ds "network").vlans }}
 {{-     $v := merge $v $v_defaults }}
 {{-     if (and (eq $v.name $i.vlan)
-                (has $v "wifi")) }}
+                (has $v "wireless")) }}
 {{-       $master = $v }}
 {{-     end }}
 {{-   end }}
@@ -77,7 +77,7 @@ set [ find where name="{{ $i.name }}" ] \
     wireless-protocol=802.11 \
     installation=indoor \
     frequency-mode=regulatory-domain \
-    country="{{ (ds "network").settings.wifi.country }}" \
+    country="{{ (ds "network").settings.wireless.country }}" \
     wmm-support=enabled \
 {{-     if (and (has $i "frequency") (lt $i.frequency 5000)) }}
     tx-power-mode=all-rates-fixed \
@@ -90,7 +90,7 @@ set [ find where name="{{ $i.name }}" ] \
     channel-width=20/40/80mhz-XXXX \
     frequency={{ $i.frequency }} \
 {{-     end }}
-    ssid="{{ $master.wifi.ssid }}" \
+    ssid="{{ $master.wireless.ssid }}" \
     security-profile="{{ $master.name }}" \
     wps-mode=disabled \
     vlan-mode=no-tag \
@@ -148,7 +148,7 @@ remove [
 }
 
 set [ find where name="{{ $i.name }}.{{ $virtual.id }}" ] \
-    ssid="{{ $virtual.wifi.ssid }}" \
+    ssid="{{ $virtual.wireless.ssid }}" \
     security-profile="{{ $virtual.name }}" \
     wps-mode=disabled \
     disabled=no \

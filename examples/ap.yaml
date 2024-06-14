@@ -54,11 +54,11 @@ interfaces:
   - name: wfi24
     original: wlan1
     enabled: true
-    # For wireless interfaces the type needs to be explicitly set to wireless,
-    # which changes the way the values are managed, including using vlan and
-    # vlans for physical and virtual wireless interfaces and attaching all of
-    # them to the bridge as individual untagged ports.
-    type: wireless
+    # For wifi interfaces the type needs to be explicitly set to wifi, which
+    # changes the way the values are managed, including using vlan and vlans for
+    # physical and virtual wifi interfaces and attaching all of them to the
+    # bridge as individual untagged ports.
+    type: wifi
     # Define the frequency for this physical interface, which will also be used
     # to set the other general settings, such as supported protocols.
     frequency: 2412
@@ -77,7 +77,7 @@ interfaces:
   - name: wfi50
     original: wlan2
     enabled: true
-    type: wireless
+    type: wifi
     frequency: 5180
     vlan: private
     vlans:

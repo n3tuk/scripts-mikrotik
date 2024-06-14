@@ -21,7 +21,7 @@ jq --null-input \
   --arg export "${export}" \
   --arg date "${date}" \
   '{"name":$name,"export":$export,"date":$date}' \
-  > "${config_uri}"
+  >"${config_uri}"
 gomplate_opts+=("--datasource" "export=${config_uri}")
 
 sub-note "Sourcing local://${hosts_dir}/${host}.yaml"
@@ -29,10 +29,10 @@ gomplate_opts+=("--datasource" "local=${hosts_dir}/${host}.yaml")
 
 # If vault is selected as a source in the host configuration file, then add an
 # extra layer to the data processing and merging for the host
-source=$(yq -r '.source' "${hosts_dir}/${host}.yaml" 2> /dev/null)
+source=$(yq -r '.source' "${hosts_dir}/${host}.yaml" 2>/dev/null)
 if [ "${source}" == "vault" ] && [ "${use_examples:-false}" != "true" ]; then
-  vault_host=$(yq -r '.vault.host' "${hosts_dir}/${host}.yaml" 2> /dev/null)
-  vault_path=$(yq -r '.vault.path' "${hosts_dir}/${host}.yaml" 2> /dev/null)
+  vault_host=$(yq -r '.vault.host' "${hosts_dir}/${host}.yaml" 2>/dev/null)
+  vault_path=$(yq -r '.vault.path' "${hosts_dir}/${host}.yaml" 2>/dev/null)
   sub-note "Sourcing vault://${vault_host}/${vault_path}"
   gomplate_opts+=("--datasource" "vault://${vault_host}/${vault_path}")
   gomplate_opts+=("--datasource" "host=merge:export|vault|local")
@@ -48,8 +48,15 @@ if gomplate \
   "${gomplate_opts[@]}" \
   --template parts=templates/parts/ \
   --file "templates/${exports_dir}/${export}.${export_ext}.t" \
-  > "${export_tmp}"; then
-  mv "${export_tmp}" "${export_file}.${export_ext}"
+  >"${export_tmp}"; then
+  if test "${export_ext}" == "scr"; then
+    sed -e '/^\s*#.*/d' "${export_tmp}" \
+      | sed -e '/^$/N;/^\n$/D' \
+        >"${export_file}.${export_ext}"
+    mv "${export_tmp}" "${export_file}.rsc"
+  else
+    mv "${export_tmp}" "${export_file}.${export_ext}"
+  fi
 else
   error "Failed to export configuration script: ${export_file}.${export_ext}"
   rm -f "${export_tmp}"

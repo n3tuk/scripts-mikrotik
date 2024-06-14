@@ -12,7 +12,6 @@ set accept-redirects=no \
     secure-redirects=yes \
     send-redirects=no \
     allow-fast-path=yes \
-    route-cache=yes \
     tcp-syncookies=no
 
 {{- if (and (ne (ds "host").export "netinstall")
