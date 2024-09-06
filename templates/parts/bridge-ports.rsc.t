@@ -21,9 +21,9 @@
 /interface bridge port
 
 {{- /*
-# The wireless interfaces need to be split in to individual interfaces for each
-# of the SSIDs, so pre-process the interfaces list from the host configuration
-# to fake the creation of these interfaces before creating the ports
+# The wireless interfaces need to be split in to individual interfaces for each of
+# the SSIDs, so pre-process the interfaces list from the host configuration to
+# fake the creation of these interfaces before creating the ports
 */}}
 
 {{- $interfaces := coll.Slice }}
@@ -42,7 +42,7 @@
 {{-       range $v := (ds "network").vlans }}
 {{-         $v := merge $v $v_defaults }}
 {{-         if (and (eq $v.name $vlan)
-                    (has $v "wifi")) }}
+                    (has $v "wireless")) }}
 {{-           $virtual = $virtual | merge (coll.Dict "name" (print $interface.name "." $v.id)
                                                      "vlan" $v.name
                                                      "comment" (print $interface.comment " (" $vlan ")")) }}

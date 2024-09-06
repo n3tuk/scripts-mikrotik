@@ -37,7 +37,7 @@ repos:
         name: Check shell scripts with shellcheck
       - id: shfmt
         name: Check shell scripts formtting with shfmt
-        args: ["-i", "2", "-bn", "-ci", "-sr"]
+        args: ["-i", "2", "-bn", "-ci"]
 
   - repo: https://github.com/igorshubovych/markdownlint-cli.git
     rev: v0.35.0
