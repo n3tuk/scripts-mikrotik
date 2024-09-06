@@ -117,10 +117,24 @@ add chain="$runId:output" \
 {{- if (eq (ds "host").type "router") }}
 
 add chain="$runId:output" \
-    src-address=fe80::/16 \
-    protocol=udp dst-port=546 \
+    out-interface-list=external \
+    src-address=fe80::1 \
+    dst-address=ff02::/16 \
+    protocol=udp \
+    src-port=546 \
+    dst-port=547 \
     action=accept \
-    comment="ACCEPT DHCPv6 client responses"
+    comment="ACCEPT DHCPv6 server requests via external interfaces"
+
+add chain="$runId:output" \
+    out-interface-list=internal \
+    src-address=fe80::/16 \
+    dst-address=fe80::/16 \
+    protocol=udp \
+    src-port=547 \
+    dst-port=546 \
+    action=accept \
+    comment="ACCEPT DHCPv6 client responses via internal interfaces"
 
 {{- end }}
 
