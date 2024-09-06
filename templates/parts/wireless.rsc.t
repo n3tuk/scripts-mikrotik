@@ -9,7 +9,7 @@
 
 {{  template "component" "Configure the wireless Profiles" }}
 
-/interface wireless security
+/interface wireless security-profiles
 
 {{- $profiles := coll.Slice }}
 {{- range $v := (ds "network").vlans }}
