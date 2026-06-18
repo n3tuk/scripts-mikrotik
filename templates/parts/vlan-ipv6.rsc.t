@@ -97,9 +97,9 @@ set [ find where interface="{{ .interface }}" ] \
 
 :if ( \
   [ :len [ find where interface="{{ .interface }}" ] ] = 0 \
-) do={ add interface="{{ .interface }}" prefix="::/64" }
+) do={ add interface="{{ .interface }}" prefix="none" }
 set [ find where interface="{{ .interface }}" ] \
-    prefix="::/64" \
+    prefix="none" \
     autonomous=no \
     disabled=no \
     comment="{{ .name }}: {{ .comment }}"
@@ -116,9 +116,9 @@ set [ find where interface="{{ .interface }}" ] \
     other-configuration=yes \
     ra-preference=high \
     ra-interval=15s-10m \
-    ra-lifetime=1h \
-    ra-delay=1s \
-    disabled=no
+    ra-lifetime=15m \
+    ra-delay=0s \
+    disabled=no \
     comment="{{ .name }}: {{ .comment }}"
 
 {{-   else if (eq $type "slaac") }}
@@ -145,9 +145,9 @@ set [ find where interface="{{ .interface }}" ] \
     other-configuration=no \
     ra-preference=high \
     ra-interval=15s-10m \
-    ra-lifetime=1h \
-    ra-delay=1s \
-    disabled=no
+    ra-lifetime=15m \
+    ra-delay=0s \
+    disabled=no \
     comment="{{ .name }}: {{ .comment }}"
 
 {{-   else if (eq $type "static") }}
@@ -172,9 +172,9 @@ set [ find where interface="{{ .interface }}" ] \
     other-configuration=no \
     ra-preference=high \
     ra-interval=15s-10m \
-    ra-lifetime=1h \
-    ra-delay=1s \
-    disabled=no
+    ra-lifetime=15m \
+    ra-delay=0s \
+    disabled=no \
     comment="{{ .name }}: {{ .comment }}"
 {{-   end }}
 {{- else }}
