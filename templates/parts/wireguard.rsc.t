@@ -47,7 +47,7 @@ set [ find where name="{{ $i.name }}" ] \
 
 {{-   if (has $i.address "ipv4") }}
 {{-     $prefix := (index ($i.address.ipv4 | strings.Split "/") 1) }}
-{{-     $network := (index ((net.ParseIPPrefix $i.address.ipv4).Range | strings.Split "-") 0) }}
+{{-     $network := (net.ParsePrefix $i.address.ipv4 | net.CIDRHost 0) }}
 
 /ip address
 

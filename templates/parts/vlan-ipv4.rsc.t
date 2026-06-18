@@ -26,7 +26,7 @@
 {{- end }}
 
 {{- if (ne $address "") }}
-{{-   $network := (index ((net.ParseIPPrefix (print $address "/" $prefix)).Range | strings.Split "-") 0) }}
+{{-   $network := (print $address "/" $prefix | net.ParsePrefix | net.CIDRHost 0) }}
 
 /ip address
 

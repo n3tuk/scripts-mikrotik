@@ -24,8 +24,8 @@
 
 {{ template "item" (print $bridge "." $v.id) }}
 
-{{    if (has $v "ipv4") }}
-{{-     $network := (index ((net.ParseIPPrefix $v.ipv4.address).Range | strings.Split "-") 0) -}}
+{{    if (and (has $v "ipv4") (ne $v.ipv4.address "")) }}
+{{-     $network := (net.ParsePrefix $v.ipv4.address | net.CIDRHost 0) -}}
 {{-     $prefix := (index ($v.ipv4.address | strings.Split "/") 1) -}}
 
 /ip firewall address-list
@@ -43,7 +43,7 @@ add list="$runId:{{ $i }}" address={{ $network }}/{{ $prefix }} \
 {{-   end }}
 
 {{    if (has $v "ipv6") }}
-{{-     $network := (index ((net.ParseIPPrefix $v.ipv6.address).Range | strings.Split "-") 0) -}}
+{{-     $network := (net.ParsePrefix $v.ipv6.address | net.CIDRHost 0) -}}
 {{-     $prefix := (index ($v.ipv6.address | strings.Split "/") 1) -}}
 
 /ipv6 firewall address-list
