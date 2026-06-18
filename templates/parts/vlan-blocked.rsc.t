@@ -2,14 +2,15 @@
 {{- /* vim:set ft=routeros: */}}
 
 {{- $bridge := (ds "host").bridge.name }}
-{{- $v_defaults := coll.Dict "enabled" true "comment" "VLAN" }}
+{{- $v_defaults := coll.Dict "enabled" true "name" "blocked" "comment" "VLAN" }}
 {{- $i_defaults := coll.Dict "enabled" false "type" "ethernet" "bridge" true "vlan" "blocked" "comment" "Unused" }}
 
 {{- $blocked := coll.Dict }}
 {{- range $v := (ds "network").vlans }}
 {{-   $v = merge $v $v_defaults }}
 {{-   if (eq $v.name "blocked") }}
-{{-     $blocked = merge $v (coll.Dict "id" (print "%02d" $v.id)) }}
+{{-     $blocked = merge $v (coll.Dict "id" (print "%02d" $v.id)
+                             "name" $v.name) }}
 {{-   end }}
 {{- end }}
 
@@ -33,4 +34,4 @@
 ) do={ add bridge={{ $bridge }} vlan-ids={{ $blocked.id }} }
 set [ find where bridge={{ $bridge }} and vlan-ids={{ $blocked.id }} ] \
     tagged="" untagged="{{ conv.Join (sort $untagged) "," }}" \
-    comment="{{ $blocked.comment }}"
+    comment="{{ $blocked.name }}: {{ $blocked.comment }}"

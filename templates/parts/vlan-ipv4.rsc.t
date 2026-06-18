@@ -59,7 +59,7 @@ set [ find where type=static and dst-address="0.0.0.0/0" ] \
 ) do={ add name="{{ .name }}" range="{{ .ipv4.pool }}" }
 set [ find where name="{{ .name }}" ] \
     range="{{ .ipv4.pool }}" \
-    comment="{{ .comment }}"
+    comment="{{ .name }}: {{ .comment }}"
 
 /ip dhcp-server network
 
@@ -70,7 +70,7 @@ set [ find where address="{{ $network }}/{{ $prefix }}" ] \
     gateway="{{ $gateway }}" \
     dns-server="{{ $gateway }}" \
     ntp-server="{{ $gateway }}" \
-    comment="{{ .name }} ({{ .comment }})"
+    comment="{{ .name }}: {{ .comment }}"
 
 /ip dhcp-server
 
@@ -80,7 +80,7 @@ set [ find where address="{{ $network }}/{{ $prefix }}" ] \
 set [ find where interface="{{ .interface }}" ] \
     name="{{ .name }}" \
     address-pool="{{ .name }}" lease-time="{{ .ipv4.lease }}" \
-    comment="{{ .comment }}"
+    comment="{{ .name }}: {{ .comment }}"
 
 {{-   else if (eq $type "static") }}
 

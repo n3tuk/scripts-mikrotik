@@ -38,11 +38,13 @@ set [ find where interface="{{ .interface }}" and dynamic=no ] \
     no-dad={{ if (eq .name "management") }}yes{{ else }}no{{ end }} \
     advertise={{ if (and (eq $type "slaac") (eq (ds "host").type "router")) }}yes{{ else }}no{{ end }} \
     disabled=no \
-    comment="{{ .name }} ({{ .comment }})"
+    comment="{{ .name }}: {{ .comment }}"
 
 {{-   if (and (eq .name "management")
               (and (has . "ipv6")
                    (ne .ipv6.address (ds "host").bridge.ipv6.address))) }}
+
+# Management Network Configuration
 
 /ipv6 route
 
@@ -68,6 +70,8 @@ remove [ find where interface="{{ .interface }}" ]
 
 {{-   else if (eq $type "dhcp") }}
 
+# IPv6 DHCP Server Configuration
+
 /ipv6 pool
 
 :if ( \
@@ -87,7 +91,7 @@ set [ find where interface="{{ .interface }}" ] \
     address-pool="{{ .name }}" \
     lease-time="{{ .ipv6.lease }}" \
     disabled=no \
-    comment="{{ .comment }}"
+    comment="{{ .name }}: {{ .comment }}"
 
 /ipv6 nd prefix
 
@@ -98,7 +102,7 @@ set [ find where interface="{{ .interface }}" ] \
     prefix="::/64" \
     autonomous=no \
     disabled=no \
-    comment="{{ .comment }}"
+    comment="{{ .name }}: {{ .comment }}"
 
 /ipv6 nd
 
@@ -115,8 +119,11 @@ set [ find where interface="{{ .interface }}" ] \
     ra-lifetime=1h \
     ra-delay=1s \
     disabled=no
+    comment="{{ .name }}: {{ .comment }}"
 
 {{-   else if (eq $type "slaac") }}
+
+# IPV6 SLAAC Configuration
 
 /ipv6 pool
 remove [ find where name="{{ .name }}" ]
@@ -141,6 +148,7 @@ set [ find where interface="{{ .interface }}" ] \
     ra-lifetime=1h \
     ra-delay=1s \
     disabled=no
+    comment="{{ .name }}: {{ .comment }}"
 
 {{-   else if (eq $type "static") }}
 
@@ -167,6 +175,7 @@ set [ find where interface="{{ .interface }}" ] \
     ra-lifetime=1h \
     ra-delay=1s \
     disabled=no
+    comment="{{ .name }}: {{ .comment }}"
 {{-   end }}
 {{- else }}
 
