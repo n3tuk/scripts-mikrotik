@@ -101,9 +101,9 @@ remove [ find ]
 
 /ip cloud
 
-set ddns-enabled=no \
+set ddns-enabled=auto \
     ddns-update-interval=none \
-    update-time=no
+    update-time=yes
 
 /ip cloud advanced
 

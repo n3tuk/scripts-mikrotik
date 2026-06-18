@@ -24,9 +24,6 @@ remove [ find where name={{ $r.name }} ]
 {{-     range $a := $r.addresses }}
 
 {{-       $type := (print "type=\"" $a.type "\"")}}
-{{-       if (eq $a.type "A") }}
-{{-         $type = "!type" }}
-{{-       end }}
 
 :if ( \
   [ :len [ find where name="{{ $r.name }}" and {{ $type }} and address="{{ $a.address }}" ] ] = 0 \

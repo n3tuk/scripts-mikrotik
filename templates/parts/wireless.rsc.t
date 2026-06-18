@@ -9,7 +9,7 @@
 
 {{  template "component" "Configure the wireless Profiles" }}
 
-/interface wireless security-profiles
+/interface wifi security
 
 {{- $profiles := coll.Slice }}
 {{- range $v := (ds "network").vlans }}
@@ -32,9 +32,8 @@ set [ find where name="{{ $v.name }}" ] \
 {{-     if (eq $psk "") }}
     mode=none
 {{-     else }}
-    mode=dynamic-keys \
-    authentication-types=wpa2-psk \
-    wpa2-pre-shared-key="{{ index (ds "network").secrets.wireless $v.wireless.psk.secret }}"
+    authentication-types=wpa3-psk \
+    passphrase="{{ $psk}}"
 {{-     end }}
 
 {{-   end }}
@@ -42,7 +41,7 @@ set [ find where name="{{ $v.name }}" ] \
 
 {{  template "component" "Configure the wireless Interfaces" }}
 
-/interface wireless
+/interface wifi
 
 {{- range $i := (ds "host").interfaces }}
 {{-   $i = merge $i $i_defaults }}
@@ -64,40 +63,31 @@ set [ find where name="{{ $v.name }}" ] \
 {{-   if (eq (len $master) 0) }}
 
 set [ find where name="{{ $i.name }}" ] \
-    ssid="MikroTik" \
-    security-profile="default" \
+    configuration.ssid="MikroTik" \
     disabled=yes \
     comment="Unused"
 
 {{-   else }}
 
 set [ find where name="{{ $i.name }}" ] \
-    mode=ap-bridge \
-    bridge-mode=enabled \
-    wireless-protocol=802.11 \
-    installation=indoor \
-    frequency-mode=regulatory-domain \
-    country="{{ (ds "network").settings.wireless.country }}" \
-    wmm-support=enabled \
+    configuration.mode=ap \
+    configuration.station-roaming=yes \
+    configuration.multicast-enhance=enabled \
+    configuration.installation=indoor \
+    configuration.country="{{ (ds "network").settings.wireless.country }}" \
 {{-     if (and (has $i "frequency") (lt $i.frequency 5000)) }}
-    tx-power-mode=all-rates-fixed \
-    tx-power=10 \
-    band=2ghz-b/g/n \
-    channel-width=20mhz \
-    frequency={{ $i.frequency }} \
+    configuration.tx-power=10 \
+    channel.band=2ghz-ax \
+    channel.width=20/40mhz \
+    channel.frequency={{ $i.frequency }} \
 {{-     else if (and (has $i "frequency") (lt $i.frequency 6000)) }}
-    band=5ghz-n/ac \
-    channel-width=20/40/80mhz-XXXX \
-    frequency={{ $i.frequency }} \
+    channel.band=5ghz-ax \
+    channel.width=20/40/80/160mhz \
+    channel.frequency={{ $i.frequency }} \
 {{-     end }}
-    ssid="{{ $master.wireless.ssid }}" \
-    security-profile="{{ $master.name }}" \
-    wps-mode=disabled \
-    vlan-mode=no-tag \
-    vlan-id=1 \
-    multicast-helper=full \
-    multicast-buffering=enabled \
-    keepalive-frames=enabled \
+    configuration.ssid="{{ $master.wireless.ssid }}" \
+    security.authentication-types=wpa3-psk \
+    security.passphrase="{{ index (ds "network").secrets.wireless $master.wireless.psk.secret }}" \
     disabled=no \
     comment="{{ $master.comment }}"
 
@@ -119,7 +109,7 @@ set [ find where name="{{ $i.name }}" ] \
 {{-     end }}
 {{-   end }}
 
-/interface wireless
+/interface wifi
 
 # Remove any virtual wireless interfaces which we do not expect based on the
 # configuration, as this must be done first before we can add any to ensure we
@@ -148,9 +138,9 @@ remove [
 }
 
 set [ find where name="{{ $i.name }}.{{ $virtual.id }}" ] \
-    ssid="{{ $virtual.wireless.ssid }}" \
-    security-profile="{{ $virtual.name }}" \
-    wps-mode=disabled \
+    configuration.ssid="{{ $virtual.wireless.ssid }}" \
+    security.authentication-types=wpa3-psk \
+    security.passphrase="{{ index (ds "network").secrets.wireless $virtual.wireless.psk.secret }}" \
     disabled=no \
     comment="{{ $virtual.comment }}"
 
@@ -158,7 +148,7 @@ set [ find where name="{{ $i.name }}.{{ $virtual.id }}" ] \
 
 {{- end }}
 
-/interface wireless security-profiles
+/interface wifi security
 
 remove [
   find where default=no

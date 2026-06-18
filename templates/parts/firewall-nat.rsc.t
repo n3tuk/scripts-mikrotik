@@ -82,6 +82,6 @@ add chain="$runId:srcnat" \
     ipsec-policy=out,none \
     out-interface-list=external \
     action=masquerade \
-    comment="MASQUERADE all outgoing external connections"
+    comment="MASQUERADE all outgoing internal connections"
 
 {{  template "parts/firewall-cleanup.rsc.t" (coll.Slice "nat" "dstnat" "input" "output" "srcnat") -}}
