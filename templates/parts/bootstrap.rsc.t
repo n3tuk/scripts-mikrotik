@@ -38,7 +38,8 @@ set [ find where name={{ $bridge }} ] \
     auto-mac=yes \
     protocol-mode=none \
     vlan-filtering=no \
-    ingress-filtering=no
+    ingress-filtering=no \
+    comment="{{ (ds "host").bridge.comment }}"
 
 # With the initial bridge configured with VLAN disabled, add all the interfaces
 # as bridge ports (where enabled) with the VLAN settings, and then configure the

@@ -2,7 +2,7 @@
 {{- /* vim:set ft=routeros: */}}
 
 {{- $bridge := (ds "host").bridge.name }}
-{{- $v_defaults := coll.Dict "enabled" true "comment" "VLAN" }}
+{{- $v_defaults := coll.Dict "enabled" true "name" "management" "comment" "VLAN" }}
 {{- $i_defaults := coll.Dict "enabled" false "type" "ethernet" "bridge" true "vlan" "blocked" "comment" "Unused" }}
 
 {{- $management := coll.Dict }}
@@ -11,6 +11,7 @@
 {{-   if (eq $v.name "management") }}
 {{-     $management = merge $v (
           coll.Dict "id" (printf "%02d" $v.id)
+                    "name" $v.name
                     "interface" (print $bridge "." $v.id)) }}
 {{-   end }}
 {{- end }}
@@ -38,7 +39,7 @@
 ) do={ add bridge="{{ $bridge }}" vlan-ids={{ $management.id }} }
 set [ find where bridge="{{ $bridge }}" and vlan-ids={{ $management.id }} ] \
     tagged="{{ conv.Join (sort $tagged) "," }}" untagged="{{ conv.Join (sort $untagged) "," }}" \
-    comment="{{ $management.comment }}"
+    comment="{{ $management.name }}: {{ $management.comment }}"
 
 /interface vlan
 
@@ -54,7 +55,7 @@ set [ find where bridge="{{ $bridge }}" and vlan-ids={{ $management.id }} ] \
 set [ find where interface={{ $bridge }} and vlan-id={{ $management.id }} ] \
     name="{{ $management.interface }}"\
     use-service-tag=no \
-    comment="{{ $management.comment }}"
+    comment="{{ $management.name }}: {{ $management.comment }}"
 
 {{  template "parts/vlan-ipv4.rsc.t" $management }}
 {{  template "parts/vlan-ipv6.rsc.t" $management }}
@@ -65,10 +66,10 @@ set [ find where interface={{ $bridge }} and vlan-id={{ $management.id }} ] \
   [ :len [ find where list="internal" and interface="{{ $management.interface }}" ] ] = 0 \
 ) do={ add list="internal" interface="{{ $management.interface }}" }
 set [ find where list="internal" and interface="{{ $management.interface }}" ] \
-    comment="{{ $management.comment }}"
+    comment="{{ $management.name }}: {{ $management.comment }}"
 
 :if ( \
   [ :len [ find where list="management" and interface="{{ $management.interface }}" ] ] = 0 \
 ) do={ add list="management" interface="{{ $management.interface }}" }
 set [ find where list="management" and interface="{{ $management.interface }}" ] \
-    comment="{{ $management.comment }}"
+    comment="{{ $management.name }}: {{ $management.comment }}"

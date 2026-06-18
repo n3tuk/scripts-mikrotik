@@ -45,6 +45,7 @@ gomplate_opts+=("--datasource" "network=${networks_dir}/${network_name}.yaml")
 export_tmp=$(mktemp -u --suffix=.gomplate)
 
 if gomplate \
+  --experimental \
   "${gomplate_opts[@]}" \
   --template parts=templates/parts/ \
   --file "templates/${exports_dir}/${export}.${export_ext}.t" \

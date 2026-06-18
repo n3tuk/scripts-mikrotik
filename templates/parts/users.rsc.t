@@ -19,7 +19,7 @@
 {{  template "section" "Set up Users" }}
 
 /ip ssh
-set always-allow-password-login=no \
+set password-authentication=no \
     forwarding-enabled=no
 
 {{  template "component" "Configure the Active Users" }}
